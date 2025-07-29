@@ -13,6 +13,8 @@ class UIManager {
         this.resumeButton = document.getElementById('resumeButton');
         this.soundButton = document.getElementById('soundButton');
         this.menuButton = document.getElementById('menuButton');
+        this.newGameButton = document.getElementById('newGameButton');
+        this.menuFromGameOverButton = document.getElementById('menuFromGameOverButton');
         this.spellButton = document.getElementById('spellButton');
         this.pauseButton = document.getElementById('pauseButton');
         this.finalScoreEl = document.getElementById('finalScore');
@@ -31,10 +33,37 @@ class UIManager {
     }
     
     setupEventListeners(game) {
+        console.log("Configurando event listeners do UI");
+        
+        // Verifica se o botão start existe
+        if (!this.startButton) {
+            console.error("Botão iniciar jogo não encontrado!");
+            
+            // Tenta encontrá-lo novamente
+            this.startButton = document.getElementById('startButton');
+            if (!this.startButton) {
+                console.error("Botão iniciar jogo realmente não existe!");
+                return; // Sai da função se não encontrar
+            }
+        }
+        
+        // Adiciona evento ao botão iniciar
+        console.log("Adicionando evento ao botão iniciar");
         this.startButton.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
+            console.log("Botão iniciar clicado!");
+            e.stopPropagation();
+            e.preventDefault();
             game.startGame(); 
         });
+        
+        // Adiciona evento de dupla segurança
+        this.startButton.onclick = function(e) {
+            console.log("Clique alternativo no botão iniciar");
+            e.stopPropagation();
+            e.preventDefault();
+            game.startGame();
+            return false;
+        };
         
         this.pauseButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -234,9 +263,19 @@ class UIManager {
         this.startScreen.classList.add('fade-out');
         this.pauseButton.classList.remove('hidden');
         
+        // Garantir que os contêineres de seleção também sejam ocultados
+        if (this.characterSelectionContainer) {
+            this.characterSelectionContainer.style.display = 'none';
+        }
+        
+        if (this.broomSelectionContainer) {
+            this.broomSelectionContainer.style.display = 'none';
+        }
+        
         setTimeout(() => {
             this.startScreen.classList.add('hidden');
             this.startScreen.classList.remove('fade-out');
+            this.startScreen.style.display = 'none';
             
             if (callback) callback();
         }, 500);
@@ -244,7 +283,24 @@ class UIManager {
     
     showGameOverScreen(score, highScore) {
         this.finalScoreEl.textContent = score;
+        
+        // Exibir o recorde
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        if (highScoreDisplay) {
+            highScoreDisplay.textContent = highScore;
+        }
+        
+        // Destacar nova pontuação recorde
+        if (score >= highScore && score > 0) {
+            this.finalScoreEl.classList.add('text-yellow-300');
+            this.finalScoreEl.classList.add('text-glow');
+        } else {
+            this.finalScoreEl.classList.remove('text-yellow-300');
+            this.finalScoreEl.classList.remove('text-glow');
+        }
+        
         this.gameOverScreen.classList.remove('hidden');
+        this.gameOverScreen.style.display = 'block';
     }
     
     hideGameOverScreen(callback) {

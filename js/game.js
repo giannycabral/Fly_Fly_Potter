@@ -72,6 +72,26 @@ class Game {
             // Inicializa o áudio quando o usuário interage com a página (clicando em Start)
             await audioManager.init();
             
+            // Salva a seleção do jogador
+            const selectedCharacterEl = document.querySelector('#characterSelection .selected');
+            const selectedBroomEl = document.querySelector('#broomSelection .selected');
+            
+            if (selectedCharacterEl && selectedCharacterEl.dataset.char) {
+                this.selectedCharacterKey = selectedCharacterEl.dataset.char;
+            }
+            
+            if (selectedBroomEl && selectedBroomEl.dataset.broom) {
+                this.selectedBroomKey = selectedBroomEl.dataset.broom;
+            }
+            
+            // Recria o jogador com as seleções corretas
+            this.player = new Player(
+                120, 
+                300, 
+                this.selectedBroomKey, 
+                this.selectedCharacterKey
+            );
+            
             this.ui.hideStartScreen(() => {
                 this.resetGame();
                 this.gameState = 'playing';

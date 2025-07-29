@@ -14,27 +14,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const startScreen = document.getElementById('startScreen');
     if (startScreen) {
         console.log("Estilo atual da tela inicial:", window.getComputedStyle(startScreen));
+        
+        // Garantir que a tela inicial esteja visível
+        startScreen.style.display = 'block';
+        startScreen.style.visibility = 'visible';
+        startScreen.style.opacity = '1';
+        startScreen.style.zIndex = '100';
     }
     
-    // Inicializa o jogo
-    const game = new Game();
+    // Garantir que o ui-layer esteja com pointer-events ativo
+    const uiLayer = document.getElementById('ui-layer');
+    if (uiLayer) {
+        uiLayer.classList.remove('pointer-events-none');
+        uiLayer.classList.add('pointer-events-auto');
+    }
     
-    // Garantir que a tela inicial seja visível
-    game.ui.showStartScreen();
-    
-    // Redimensionar o canvas quando a janela for redimensionada
-    window.addEventListener('resize', () => {
-        const gameContainer = document.getElementById('game-container');
+    // Esperar um pouco para garantir que tudo esteja carregado
+    setTimeout(() => {
+        // Inicializa o jogo
+        const game = new Game();
         
-        // Garantir que o canvas mantenha suas dimensões base
-        game.canvas.width = CONFIG.BASE_WIDTH;
-        game.canvas.height = CONFIG.BASE_HEIGHT;
+        // Garantir que a tela inicial seja visível
+        game.ui.showStartScreen();
         
-        game.ctx.imageSmoothingEnabled = false;
-        
-        // Redesenha o estado atual
-        if (game.gameState === 'start' || game.gameState === 'gameOver') {
-            game.drawInitialScreen();
+        // Forçar renderização das telas de seleção
+        if (game.ui.characterSelectionContainer) {
+            game.ui.setupCharacterSelection((charKey) => {
+                console.log("Personagem selecionado:", charKey);
+                game.selectedCharacterKey = charKey;
+                game.drawInitialScreen();
+            });
         }
-    });
+        
+        if (game.ui.broomSelectionContainer) {
+            game.ui.setupBroomSelection((broomKey) => {
+                console.log("Vassoura selecionada:", broomKey);
+                game.selectedBroomKey = broomKey;
+                game.drawInitialScreen();
+            });
+        }
+        
+        // Redimensionar o canvas quando a janela for redimensionada
+        window.addEventListener('resize', () => {
+            // Garantir que o canvas mantenha suas dimensões base
+            game.canvas.width = CONFIG.BASE_WIDTH;
+            game.canvas.height = CONFIG.BASE_HEIGHT;
+            game.ctx.imageSmoothingEnabled = false;
+            
+            // Redesenha o estado atual
+            if (game.gameState === 'start' || game.gameState === 'gameOver') {
+                game.drawInitialScreen();
+            }
+        });
+    }, 100);
 });

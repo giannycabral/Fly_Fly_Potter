@@ -32,10 +32,15 @@
                     </div>
 
                     <!-- Tela de Game Over -->
-                    <div id="gameOverScreen" class="hidden text-center bg-black bg-opacity-70 p-4 sm:p-8 rounded-lg">
+                    <div id="gameOverScreen" class="hidden text-center bg-black bg-opacity-80 p-4 sm:p-8 rounded-lg pointer-events-auto">
                         <h2 class="text-3x1 sm:text-5x1 text-red-500 text-shadow mb-4">Game Over</h2>
-                        <p class="text-lg sm:text-2x1 mb-2">A sua pontuação: <span id="finalScore">0</span></p>
-                        <button id="restartButton" class="button-style pointer-events-auto text-base sm:text-lg">Tentar Novamente</button>
+                        <p class="text-lg sm:text-2x1 mb-4">A sua pontuação: <span id="finalScore">0</span></p>
+                        <p class="text-sm text-yellow-300 mb-4">Recorde: <span id="highScoreDisplay">0</span></p>
+                        <div class="flex flex-col gap-3 mt-4">
+                            <button id="restartButton" class="button-style text-base sm:text-lg">Tentar Novamente</button>
+                            <button id="newGameButton" class="button-style text-base sm:text-lg bg-green-700">Novo Jogo</button>
+                            <button id="menuFromGameOverButton" class="button-style text-base sm:text-lg bg-blue-700">Menu Principal</button>
+                        </div>
                     </div>
 
                     <!-- Menu de Pausa -->

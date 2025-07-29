@@ -82,10 +82,12 @@ class Obstacle {
     }
     
     update() {
-        this.x -= 2;
+        // Velocidade de movimento reduzida para não ficar rápido demais
+        this.x -= 1.5;
         
         if (this.type === 'moving') {
-            this.gapY += this.moveSpeed * this.moveDirection;
+            // Reduzir velocidade de movimento vertical também
+            this.gapY += (this.moveSpeed * 0.7) * this.moveDirection;
             if (this.gapY <= this.initialGapY - this.moveRange || this.gapY >= this.initialGapY + this.moveRange) {
                 this.moveDirection *= -1;
             }

@@ -21,7 +21,8 @@ class Bean {
     }
     
     update() {
-        this.x -= 2.5;
+        // Reduzir velocidade para manter compatível com os obstáculos
+        this.x -= 1.5;
     }
     
     checkCollision(player) {

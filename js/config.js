@@ -22,7 +22,7 @@ const CONFIG = {
     obstacleProps: { 
         width: 78, 
         gap: 240, 
-        frequency: 100 
+        frequency: 150 // Aumentado para tornar o jogo mais fácil - menos obstáculos
     },
     
     // Propriedades dos feijõezinhos
