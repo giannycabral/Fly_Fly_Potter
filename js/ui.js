@@ -31,73 +31,31 @@ class UIManager {
     }
     
     setupEventListeners(game) {
-        console.log("Configurando eventos de UI");
+        this.startButton.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            game.startGame(); 
+        });
         
-        // Verifica se o botão start existe
-        if (!this.startButton) {
-            console.error("Botão iniciar jogo não encontrado!");
-            
-            // Tenta encontrá-lo novamente
-            this.startButton = document.getElementById('startButton');
-            if (!this.startButton) {
-                console.error("Botão iniciar jogo realmente não existe!");
-                
-                // Cria o botão se não existir
-                const startScreen = document.getElementById('startScreen');
-                if (startScreen) {
-                    console.log("Criando botão iniciar jogo...");
-                    this.startButton = document.createElement('button');
-                    this.startButton.id = 'startButton';
-                    this.startButton.className = 'button-style text-base sm:text-lg';
-                    this.startButton.textContent = 'Iniciar Jogo';
-                    this.startButton.style.marginTop = '10px';
-                    this.startButton.style.padding = '8px 16px';
-                    this.startButton.style.display = 'block';
-                    this.startButton.style.width = '100%';
-                    startScreen.appendChild(this.startButton);
-                }
-            }
-        }
+        this.pauseButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.togglePause();
+        });
         
-        // Adiciona evento ao botão iniciar
-        if (this.startButton) {
-            console.log("Adicionando evento ao botão iniciar");
-            this.startButton.addEventListener('click', (e) => { 
-                console.log("Botão iniciar clicado!");
-                e.stopPropagation(); 
-                game.startGame(); 
-            });
-        }
-        
-        // Outros botões
-        if (this.pauseButton) {
-            this.pauseButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                game.togglePause();
-            });
-        }
-        
-        if (this.resumeButton) {
-            this.resumeButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                game.togglePause();
-            });
-        }
+        this.resumeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.togglePause();
+        });
 
-        if (this.soundButton) {
-            this.soundButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isSoundOn = audioManager.toggleSound();
-                this.soundButton.textContent = `Som: ${isSoundOn ? 'Ligado' : 'Desligado'}`;
-            });
-        }
+        this.soundButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isSoundOn = audioManager.toggleSound();
+            this.soundButton.textContent = `Som: ${isSoundOn ? 'Ligado' : 'Desligado'}`;
+        });
 
-        if (this.menuButton) {
-            this.menuButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                game.returnToMenu();
-            });
-        }
+        this.menuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.returnToMenu();
+        });
 
         this.restartButton.addEventListener('click', (e) => { 
             e.stopPropagation(); 
@@ -124,31 +82,16 @@ class UIManager {
     }
     
     setupCharacterSelection(onCharacterSelected) {
-        console.log("Configurando seleção de personagens");
-        
-        if (!this.characterSelectionContainer) {
-            console.error("Container de seleção de personagens não encontrado!");
-            return;
-        }
-        
         this.characterSelectionContainer.innerHTML = '';
-        this.characterSelectionContainer.style.display = "flex";
-        this.characterSelectionContainer.style.justifyContent = "center";
-        this.characterSelectionContainer.style.gap = "10px";
-        
         Object.keys(CONFIG.characters).forEach(key => {
             const char = CONFIG.characters[key];
             const container = document.createElement('div');
             container.className = 'selection-container text-center';
             container.dataset.char = key;
-            container.style.width = "64px";
-            container.style.maxHeight = "80px";
 
             const portraitCanvas = document.createElement('canvas');
-            portraitCanvas.width = 40;
-            portraitCanvas.height = 40;
-            portraitCanvas.style.width = "40px";
-            portraitCanvas.style.height = "40px";
+            portraitCanvas.width = 56;
+            portraitCanvas.height = 56;
             
             const charCtx = portraitCanvas.getContext('2d');
             charCtx.imageSmoothingEnabled = false;
@@ -157,14 +100,11 @@ class UIManager {
             const nameP = document.createElement('p');
             nameP.className = 'text-xs mt-1';
             nameP.textContent = char.name.split(' ')[0];
-            nameP.style.fontSize = "8px";
-            nameP.style.marginTop = "4px";
 
             container.appendChild(portraitCanvas);
             container.appendChild(nameP);
             
             container.addEventListener('click', () => {
-                console.log("Personagem selecionado:", key);
                 onCharacterSelected(key);
                 document.querySelectorAll('#characterSelection .selection-container').forEach(el => el.classList.remove('selected'));
                 container.classList.add('selected');
@@ -172,42 +112,20 @@ class UIManager {
 
             this.characterSelectionContainer.appendChild(container);
         });
-        
-        const firstChar = document.querySelector('#characterSelection .selection-container');
-        if (firstChar) {
-            firstChar.classList.add('selected');
-            console.log("Primeiro personagem selecionado por padrão");
-        } else {
-            console.error("Nenhum personagem disponível para seleção");
-        }
+        document.querySelector('#characterSelection .selection-container').classList.add('selected');
     }
     
     setupBroomSelection(onBroomSelected) {
-        console.log("Configurando seleção de vassouras");
-        
-        if (!this.broomSelectionContainer) {
-            console.error("Container de seleção de vassouras não encontrado!");
-            return;
-        }
-        
         this.broomSelectionContainer.innerHTML = '';
-        this.broomSelectionContainer.style.display = "flex";
-        this.broomSelectionContainer.style.justifyContent = "center";
-        this.broomSelectionContainer.style.gap = "10px";
-        
         Object.keys(CONFIG.brooms).forEach(key => {
             const broom = CONFIG.brooms[key];
             const container = document.createElement('div');
             container.className = 'selection-container text-center';
             container.dataset.broom = key;
-            container.style.width = "64px";
-            container.style.maxHeight = "80px";
 
             const portraitCanvas = document.createElement('canvas');
-            portraitCanvas.width = 48;
-            portraitCanvas.height = 24;
-            portraitCanvas.style.width = "48px";
-            portraitCanvas.style.height = "24px";
+            portraitCanvas.width = 64;
+            portraitCanvas.height = 32;
 
             const broomCtx = portraitCanvas.getContext('2d');
             broomCtx.imageSmoothingEnabled = false;
@@ -216,14 +134,11 @@ class UIManager {
             const nameP = document.createElement('p');
             nameP.className = 'text-xs mt-1';
             nameP.textContent = broom.name;
-            nameP.style.fontSize = "8px";
-            nameP.style.marginTop = "4px";
 
             container.appendChild(portraitCanvas);
             container.appendChild(nameP);
 
             container.addEventListener('click', () => {
-                console.log("Vassoura selecionada:", key);
                 onBroomSelected(key);
                 document.querySelectorAll('#broomSelection .selection-container').forEach(el => el.classList.remove('selected'));
                 container.classList.add('selected');
@@ -231,14 +146,7 @@ class UIManager {
 
             this.broomSelectionContainer.appendChild(container);
         });
-        
-        const firstBroom = document.querySelector('#broomSelection .selection-container');
-        if (firstBroom) {
-            firstBroom.classList.add('selected');
-            console.log("Primeira vassoura selecionada por padrão");
-        } else {
-            console.error("Nenhuma vassoura disponível para seleção");
-        }
+        document.querySelector('#broomSelection .selection-container').classList.add('selected');
     }
     
     drawCharacterPreview(charCtx, charKey) {
@@ -278,27 +186,29 @@ class UIManager {
         const broom = CONFIG.brooms[broomKey];
         const canvasWidth = broomCtx.canvas.width;
         const canvasHeight = broomCtx.canvas.height;
-        const p = 2; // Pixel pequeno para o preview
+        // Reduzir o tamanho do pixel para a vassoura ficar menor
+        const p = 2;
 
         broomCtx.clearRect(0, 0, canvasWidth, canvasHeight);
         
         // Centralizar a vassoura no canvas
         const broomY = canvasHeight / 2 - (p*1.5)/2;
+        const startX = canvasWidth / 2 - (11*p) / 2;
 
         // Cerdas da vassoura (parte traseira)
         broomCtx.fillStyle = '#FBBF24';
-        broomCtx.fillRect(canvasWidth/2 - 10*p, broomY, 3*p, p*1.5);
+        broomCtx.fillRect(startX, broomY, 3*p, p*1.5);
 
         // Cabo da vassoura
         broomCtx.fillStyle = broom.color;
-        broomCtx.fillRect(canvasWidth/2 - 7*p, broomY, 8*p, p*1.5);
+        broomCtx.fillRect(startX + 3*p, broomY, 8*p, p*1.5);
 
         if (broomKey === 'firebolt') {
             broomCtx.fillStyle = '#FFD700';
-            broomCtx.fillRect(canvasWidth/2 - p, broomY, p, p*1.5);
+            broomCtx.fillRect(startX + 9*p, broomY, p, p*1.5);
         }
         
-        console.log(`Vassoura ${broomKey} desenhada com tamanho ${canvasWidth}x${canvasHeight}`);
+        console.log(`Vassoura ${broomKey} desenhada em tamanho reduzido no canvas ${canvasWidth}x${canvasHeight}`);
     }
     
     showStartScreen() {

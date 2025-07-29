@@ -1,121 +1,156 @@
 // Classe do jogador (personagem)
 class Player {
-    constructor(ctx, x, y, characterKey = 'harry', broomKey = 'nimbus') {
-        this.ctx = ctx;
+    constructor(x, y, selectedBroomKey, selectedCharacterKey) {
         this.x = x;
         this.y = y;
-        this.width = 48;
-        this.height = 32;
-        this.velY = 0;
-        this.gravity = 0.5;
-        this.jumpForce = -10;
-        this.character = CONFIG.characters[characterKey];
-        this.broom = CONFIG.brooms[broomKey];
-        this.characterKey = characterKey;
-        this.broomKey = broomKey;
-        this.isFlapping = false;
-        this.lives = 3;
-        this.flapTimer = 0;
-        
-        // Para animação
-        this.rotation = 0;
-        this.frameWidth = this.width;
-        this.frameHeight = this.height;
-        
-        console.log(`Jogador criado com personagem: ${characterKey}, vassoura: ${broomKey}`);
+        this.baseWidth = 56;
+        this.baseHeight = 48;
+        this.width = 56;
+        this.height = 48;
+        this.velocity = 0;
+        this.isInvincible = false;
+        this.invincibilityTimer = 0;
+        this.visualEffect = null;
+        this.visualEffectTimer = 0;
+        this.selectedBroomKey = selectedBroomKey;
+        this.selectedCharacterKey = selectedCharacterKey;
     }
     
-    jump() {
-        this.velY = this.jumpForce;
-        this.isFlapping = true;
-        this.flapTimer = 10;
-    }
-    
-    update() {
-        // Aplicar gravidade
-        this.velY += this.gravity;
-        this.y += this.velY;
+    draw(ctx, frame) {
+        ctx.save();
+        if (this.isInvincible) {
+            ctx.fillStyle = `rgba(251, 191, 36, ${0.5 + Math.sin(frame * 0.3) * 0.2})`;
+            ctx.beginPath();
+            ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 40, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        if (this.visualEffect) {
+            switch(this.visualEffect) {
+                case 'rainbow': ctx.globalAlpha = 0.5 + Math.sin(frame * 0.5) * 0.5; break;
+                case 'spin':
+                    ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                    ctx.rotate(frame * 0.2);
+                    ctx.translate(-(this.x + this.width / 2), -(this.y + this.height / 2));
+                    break;
+            }
+        }
+
+        // Vassoura - redimensionada para ser menor
+        // Calculando dimensões menores para a vassoura
+        const broomWidth = this.width * 0.65; // Redução de 35% da largura
+        const broomHeight = this.height * 0.12; // Redução da altura para ser mais fina
+        const broomX = this.x + (this.width - broomWidth) / 2; // Centralizar
         
-        // Limites da tela
-        if (this.y < 0) {
-            this.y = 0;
-            this.velY = 0;
+        // Vassoura (parte traseira - cerdas)
+        ctx.fillStyle = '#FBBF24';
+        ctx.fillRect(broomX - broomWidth * 0.14, this.y + this.height * 0.66, broomWidth * 0.12, broomHeight);
+        
+        // Vassoura (cabo)
+        ctx.fillStyle = CONFIG.brooms[this.selectedBroomKey].color;
+        ctx.fillRect(broomX, this.y + this.height * 0.66, broomWidth, broomHeight);
+        
+        if (this.selectedBroomKey === 'firebolt') {
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(broomX + broomWidth * 0.75, this.y + this.height * 0.66, broomWidth * 0.08, broomHeight);
         }
         
-        if (this.y + this.height > CONFIG.BASE_HEIGHT) {
-            this.y = CONFIG.BASE_HEIGHT - this.height;
-            this.velY = 0;
-        }
-        
-        // Rotação baseada na velocidade vertical
-        this.rotation = this.velY * 1.5;
-        if (this.rotation > 50) this.rotation = 50;
-        if (this.rotation < -30) this.rotation = -30;
-        
-        // Decrementar o timer do flap
-        if (this.flapTimer > 0) {
-            this.flapTimer--;
-        } else {
-            this.isFlapping = false;
-        }
-    }
-    
-    draw() {
-        this.ctx.save();
-        
-        // Ponto de rotação centrado no jogador
-        this.ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-        this.ctx.rotate(this.rotation * Math.PI / 180);
-        
-        // Pixel size para o desenho pixelado
-        const p = 3;  // Reduzido tamanho para melhor escala
-        
-        // Posição ajustada para desenho centralizado
-        const drawX = -this.width / 3;  // Reduzido para centralizar
-        const drawY = -this.height / 3;  // Reduzido para centralizar
-        
-        // Desenhar a vassoura - REDUZIDA
-        // Cabo da vassoura
-        this.ctx.fillStyle = this.broom.color;
-        this.ctx.fillRect(drawX, drawY + 6, 30, 4);
-        
-        // Cerdas na parte de trás da vassoura
-        this.ctx.fillStyle = '#FBBF24';
-        this.ctx.fillRect(drawX - 8, drawY + 5, 8, 6);
-        
-        if (this.broomKey === 'firebolt') {
-            // Detalhes dourados para a Firebolt
-            this.ctx.fillStyle = '#FFD700';
-            this.ctx.fillRect(drawX + 22, drawY + 6, 3, 4);
-        }
-        
-        // Desenhar o personagem - REDUZIDO
         // Corpo
-        this.ctx.fillStyle = this.character.robeColor;
-        this.ctx.fillRect(drawX + 8, drawY + 2, 12, 16);
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(this.x + this.width * 0.28, this.y + this.height * 0.16, this.width * 0.42, this.height * 0.5);
+        ctx.fillStyle = '#DC2626';
+        ctx.fillRect(this.x + this.width * 0.28, this.y + this.height * 0.58, this.width * 0.42, this.height * 0.16);
+        ctx.fillStyle = '#FBBF24';
+        ctx.fillRect(this.x + this.width * 0.32, this.y + this.height * 0.58, this.width * 0.07, this.height * 0.16);
+        ctx.fillRect(this.x + this.width * 0.46, this.y + this.height * 0.58, this.width * 0.07, this.height * 0.16);
+        ctx.fillRect(this.x + this.width * 0.60, this.y + this.height * 0.58, this.width * 0.07, this.height * 0.16);
         
         // Cabeça
-        this.ctx.fillStyle = '#FDE68A';
-        this.ctx.fillRect(drawX + 10, drawY - 2, 8, 8);
+        ctx.fillStyle = '#FDE68A';
+        ctx.fillRect(this.x + this.width * 0.35, this.y, this.width * 0.28, this.height * 0.33);
         
-        // Cabelo
-        this.ctx.fillStyle = this.character.hairColor;
-        this.ctx.fillRect(drawX + 10, drawY - 5, 8, 3);
-        
-        // Se for o Harry, adicionar os óculos
-        if (this.characterKey === 'harry') {
-            this.ctx.fillStyle = '#000000';
-            this.ctx.fillRect(drawX + 11, drawY, 2, 2);
-            this.ctx.fillRect(drawX + 15, drawY, 2, 2);
-            this.ctx.fillRect(drawX + 13, drawY + 1, 2, 1);
+        // Cabelo e Óculos
+        const currentChar = CONFIG.characters[this.selectedCharacterKey];
+        ctx.fillStyle = currentChar.hairColor;
+        if (this.selectedCharacterKey === 'hermione') { // Cabelo da Hermione
+             ctx.fillRect(this.x + this.width * 0.32, this.y - this.height * 0.04, this.width * 0.35, this.height * 0.16);
+             ctx.fillRect(this.x + this.width * 0.28, this.y + this.height * 0.04, this.width * 0.42, this.height * 0.12);
+             ctx.fillRect(this.x + this.width * 0.28, this.y + this.height * 0.16, this.width * 0.14, this.height * 0.25);
+        } else { // Cabelo do Harry e Rony
+            ctx.fillRect(this.x + this.width * 0.35, this.y, this.width * 0.28, this.height * 0.08);
+            ctx.fillRect(this.x + this.width * 0.32, this.y + this.height * 0.08, this.width * 0.07, this.height * 0.08);
+            ctx.fillRect(this.x + this.width * 0.60, this.y + this.height * 0.08, this.width * 0.07, this.height * 0.08);
         }
-        
-        // Efeito de 'flapear' quando pula
-        if (this.isFlapping) {
-            this.ctx.fillStyle = this.character.robeColor;
-            this.ctx.fillRect(drawX + 4, drawY + 7, 4, 3);
-            this.ctx.fillRect(drawX + 20, drawY + 7, 4, 3);
+
+        if (currentChar.hasGlasses) {
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(this.x + this.width * 0.39, this.y + this.height * 0.12, this.width * 0.07, this.height * 0.08);
+            ctx.fillRect(this.x + this.width * 0.53, this.y + this.height * 0.12, this.width * 0.07, this.height * 0.08);
         }
-        
-        this.ctx.restore();
+        ctx.restore();
     }
+    
+    update(groundHeight) {
+        const currentBroom = CONFIG.brooms[this.selectedBroomKey];
+        
+        this.velocity += currentBroom.gravity;
+        this.y += this.velocity;
+        
+        if (this.y < 0) { 
+            this.y = 0; 
+            this.velocity = 0; 
+        }
+        
+        if (this.y + this.height > CONFIG.BASE_HEIGHT - groundHeight) {
+            this.y = CONFIG.BASE_HEIGHT - groundHeight - this.height;
+            this.velocity = 0;
+            return true; // Retorna true se o jogador bater no chão
+        }
+        
+        if(this.isInvincible) {
+            this.invincibilityTimer--;
+            if(this.invincibilityTimer <= 0) this.isInvincible = false;
+        }
+        
+        if(this.visualEffect) {
+            this.visualEffectTimer--;
+            if(this.visualEffectTimer <= 0) {
+                this.visualEffect = null;
+                this.width = this.baseWidth;
+                this.height = this.baseHeight;
+            }
+        }
+        
+        return false; // Jogador não bateu no chão
+    }
+    
+    flap() {
+        let currentLift = CONFIG.brooms[this.selectedBroomKey].lift;
+        if (this.visualEffect === 'invert') {
+            currentLift = -currentLift;
+        }
+        this.velocity = currentLift;
+        audioManager.playSfx(audioManager.sfx.flap, "C5", "8n", Tone.now());
+    }
+    
+    setInvincible(duration) {
+        this.isInvincible = true;
+        this.invincibilityTimer = duration;
+    }
+    
+    applyVisualEffect(effect, duration) {
+        this.visualEffect = effect;
+        this.visualEffectTimer = duration;
+        
+        if (effect === 'resize') {
+            const scale = Math.random() < 0.5 ? 0.5 : 1.5; // Encolher ou aumentar
+            this.width = this.baseWidth * scale;
+            this.height = this.baseHeight * scale;
+        }
+    }
+    
+    updateSelectedOptions(broomKey, characterKey) {
+        this.selectedBroomKey = broomKey;
+        this.selectedCharacterKey = characterKey;
+    }
+}

@@ -105,6 +105,12 @@ canvas {
     position: relative;
     image-rendering: pixelated;
     margin: 0 auto;
+    max-width: 100%;
+}
+
+.selection-container p {
+    font-size: 8px;
+    margin-top: 4px;
 }
 
 .fade-out { animation: fadeOut 0.5s forwards; }
