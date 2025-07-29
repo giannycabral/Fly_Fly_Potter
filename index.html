@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Fly Fly Potter</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+        <!-- NOTA: Tailwind via CDN é usado apenas para desenvolvimento. Para produção, deve ser instalado como pacote npm -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- NOTA: A versão atual do Tone.js usa ScriptProcessorNode que está obsoleta. 
+             Em uma atualização futura, considerar migrar para uma versão mais recente que use AudioWorkletNode -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div id="game-wrapper">
+            <div id="game-container">
+                <h1 id="title" class="text-2x1 sm:text-4x1 md:text-5x1 text-shadow text-yellow-300">Fly Fly Potter</h1>
+                <canvas id="gameCanvas"></canvas>
+                <div id="pauseButton" class="hidden pointer-events-auto">||</div>
+                <div id="ui-layer" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+
+                    <!-- Tela Inicial com instruções -->
+                    <div id="startScreen" class="text-center bg-black bg-opacity-80 p-4 sm:p-6 rounded-lg max-w-sm sm:max-w-md md:max-w-lg mx-4 pointer-events-auto" style="z-index: 100; display: block !important; visibility: visible !important; opacity: 1 !important;">
+                        <p class="mb-2 text-lg sm:text-x1">Escolha seu Personagem:</p>
+                        <div id="characterSelection" class="flex justify-center items-start gap-2 mb-4"></div>
+                        <p class="mb-2 text-lg sm:text-x1">Escolha sua Vassoura:</p>
+                        <div id="broomSelection" class="flex justify-center items-start gap-2 mb-4"></div>
+                        <button id="startButton" class="button-style text-base sm:text-lg">Iniciar Jogo</button>
+                    </div>
+
+                    <!-- Tela de Game Over -->
+                    <div id="gameOverScreen" class="hidden text-center bg-black bg-opacity-70 p-4 sm:p-8 rounded-lg">
+                        <h2 class="text-3x1 sm:text-5x1 text-red-500 text-shadow mb-4">Game Over</h2>
+                        <p class="text-lg sm:text-2x1 mb-2">A sua pontuação: <span id="finalScore">0</span></p>
+                        <button id="restartButton" class="button-style pointer-events-auto text-base sm:text-lg">Tentar Novamente</button>
+                    </div>
+
+                    <!-- Menu de Pausa -->
+                    <div id="pauseMenu" class="hidden text-center bg-black bg-opacity-80 p-8 rounded-lg pointer-events-auto space-y-4">
+                        <h2 class="text-4x1 text-yellow-300 text-shadow mb-4">Pausa</h2>
+                        <button id="resumeButton" class="button-style w-full">Continuar</button>
+                        <button id="soundButton" class="button-style w-full">Som: Ligado</button>
+                        <button id="menuButton" class="button-style w-full">Voltar ao Menu</button>
+                    </div>
+
+                    <!-- Modal de Feitiço -->
+                    <div id="spellModal" class="hidden text-center bg-black bg-opacity-80 p-8 rounded-lg pointer-events-auto space-y-4">
+                        <h2 class="text-2x1 sm:text-4x1 text-blue-300 text-shadow mb-4">LANCE O FEITIÇO!</h2>
+                        <div id="timerBar"><div id="timerBarInner"></div></div>
+                        <button id="spellButton" class="button-style w-full mt-4">Expecto Patronum</button>            
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scripts -->
+        <script src="js/config.js"></script>
+        <script src="js/audio.js"></script>
+        <script src="js/player.js"></script>
+        <script src="js/background.js"></script>
+        <script src="js/entities.js"></script>
+        <script src="js/ui.js"></script>
+        <script src="js/game.js"></script>
+        <script src="debug.js"></script>
+        <script src="js/main.js"></script>
+    </body>
+</html>
