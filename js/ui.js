@@ -13,7 +13,6 @@ class UIManager {
         this.resumeButton = document.getElementById('resumeButton');
         this.soundButton = document.getElementById('soundButton');
         this.menuButton = document.getElementById('menuButton');
-        this.newGameButton = document.getElementById('newGameButton');
         this.menuFromGameOverButton = document.getElementById('menuFromGameOverButton');
         this.spellButton = document.getElementById('spellButton');
         this.pauseButton = document.getElementById('pauseButton');
@@ -86,10 +85,23 @@ class UIManager {
             game.returnToMenu();
         });
 
+        // Botão Tentar Novamente na tela de Game Over
         this.restartButton.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
+            e.stopPropagation();
+            e.preventDefault();
+            console.log("Botão tentar novamente clicado");
             game.restartFromGameOver();
         });
+        
+        // Botão Menu Principal na tela de Game Over
+        if (this.menuFromGameOverButton) {
+            this.menuFromGameOverButton.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                e.preventDefault();
+                console.log("Botão menu principal clicado");
+                game.returnToMenu();
+            });
+        }
 
         this.spellButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -254,6 +266,33 @@ class UIManager {
         this.startScreen.style.zIndex = '100';
         this.startScreen.classList.add('fade-in');
         
+        // Garantir que os contêineres de seleção estejam visíveis
+        if (this.characterSelectionContainer) {
+            this.characterSelectionContainer.style.display = 'flex';
+            this.characterSelectionContainer.style.visibility = 'visible';
+            this.characterSelectionContainer.style.opacity = '1';
+            
+            // Recriar os seletores de personagem se estiverem vazios
+            if (this.characterSelectionContainer.children.length === 0) {
+                this.setupCharacterSelection((charKey) => {
+                    console.log("Personagem selecionado na reinicialização:", charKey);
+                });
+            }
+        }
+        
+        if (this.broomSelectionContainer) {
+            this.broomSelectionContainer.style.display = 'flex';
+            this.broomSelectionContainer.style.visibility = 'visible';
+            this.broomSelectionContainer.style.opacity = '1';
+            
+            // Recriar os seletores de vassouras se estiverem vazios
+            if (this.broomSelectionContainer.children.length === 0) {
+                this.setupBroomSelection((broomKey) => {
+                    console.log("Vassoura selecionada na reinicialização:", broomKey);
+                });
+            }
+        }
+        
         setTimeout(() => this.startScreen.classList.remove('fade-in'), 500);
         
         console.log("Tela inicial mostrada", this.startScreen);
@@ -306,9 +345,13 @@ class UIManager {
     hideGameOverScreen(callback) {
         this.gameOverScreen.classList.add('fade-out');
         
+        // Garantir que a tela de Game Over realmente fica oculta
         setTimeout(() => {
             this.gameOverScreen.classList.add('hidden');
             this.gameOverScreen.classList.remove('fade-out');
+            this.gameOverScreen.style.display = 'none'; // Forçar display none
+            this.gameOverScreen.style.visibility = 'hidden'; // Forçar visibility hidden
+            this.gameOverScreen.style.opacity = '0'; // Forçar opacity 0
             
             if (callback) callback();
         }, 500);

@@ -407,18 +407,38 @@ class Game {
         this.ui.hidePauseMenu();
         this.ui.hidePauseButton();
         
-        this.ui.showStartScreen();
-        
-        this.resetGame();
-        this.drawInitialScreen();
+        // Sempre ocultar a tela de game over quando voltamos ao menu
+        // Isso garante que ela não ficará visível quando for acessada pelo botão "Menu Principal"
+        this.ui.hideGameOverScreen(() => {
+            // Reconfiguramos os seletores de personagens e vassouras
+            if (this.ui.characterSelectionContainer) {
+                this.ui.setupCharacterSelection((charKey) => {
+                    console.log("Personagem selecionado ao voltar ao menu:", charKey);
+                    this.selectedCharacterKey = charKey;
+                    this.drawInitialScreen();
+                });
+            }
+            
+            if (this.ui.broomSelectionContainer) {
+                this.ui.setupBroomSelection((broomKey) => {
+                    console.log("Vassoura selecionada ao voltar ao menu:", broomKey);
+                    this.selectedBroomKey = broomKey;
+                    this.drawInitialScreen();
+                });
+            }
+            
+            this.ui.showStartScreen();
+            this.resetGame();
+            this.drawInitialScreen();
+        });
     }
     
     restartFromGameOver() {
+        // Reinicia com o mesmo personagem e vassoura
         this.ui.hideGameOverScreen(() => {
-            this.ui.showStartScreen();
-            
             this.resetGame();
-            this.drawInitialScreen();
+            this.gameState = 'playing';
+            this.gameLoop();
         });
     }
     
