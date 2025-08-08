@@ -29,6 +29,10 @@ class AudioManager {
         return this.isSoundOn;
     }
     
+    isSoundOn() {
+        return this.isSoundOn;
+    }
+    
     async init() {
         try {
             // Verificar se o contexto já está em execução

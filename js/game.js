@@ -187,6 +187,17 @@ class Game {
         // O dementador continua se movendo
         this.dementor.update(this.frame);
         
+        // Efeito visual de "ameaça" - piscar a tela levemente em vermelho
+        if (this.frame % 10 === 0) {
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.5)';
+                setTimeout(() => {
+                    canvas.style.boxShadow = 'none';
+                }, 100);
+            }
+        }
+        
         // Verificar se o tempo acabou
         if (this.spellTimer <= 0) {
             console.log("Tempo esgotado para lançar o feitiço!");
@@ -195,16 +206,8 @@ class Game {
             this.resolveSpellEvent();
         }
         
-        // Verificar input de espaço para lançar o feitiço
-        document.onkeydown = (e) => {
-            if (e.code === 'Space') {
-                console.log("Espaço pressionado durante o modo spellCasting");
-                audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
-                this.score += 10;
-                this.resolveSpellEvent();
-                document.onkeydown = null; // Remover o evento após uso
-            }
-        };
+        // Nota: Não configuramos event listeners de teclado aqui
+        // A captura de tecla para lançar o feitiço é gerenciada pelo UIManager
     }
     
     drawGame() {
@@ -335,7 +338,8 @@ class Game {
     
     checkCollisions() {
         // Verificar colisão com dementador e iniciar evento de feitiço
-        if (this.dementor.active && this.gameState === 'playing' && this.dementor.x > -this.dementor.width) {
+        if (this.dementor.active && this.gameState === 'playing' && this.dementor.x > 0 && 
+            this.dementor.x < CONFIG.BASE_WIDTH - 100) {
             console.log("Dementador detectado! Iniciando modo de feitiço...");
             
             // Mudar o estado do jogo para lançamento de feitiço
@@ -349,9 +353,12 @@ class Game {
             
             // Reproduzir som de alerta
             audioManager.playSfx(audioManager.sfx.hit, "D2", "4n", Tone.now());
+            
+            // Fazer o dementador "pairar" na tela durante o confronto
+            this.dementor.pauseMovement = true;
         }
         
-        // Verificar colisão direta com dementador
+        // Verificar colisão direta com dementador quando não estiver no modo de feitiço
         if (this.dementor.active && this.dementor.checkCollision(this.player) && this.gameState !== 'spellCasting') {
             console.log("Colisão com dementador!");
             this.loseLife();
@@ -359,14 +366,17 @@ class Game {
         }
         
         // Verificar colisão com pomo de ouro
-        if (this.goldenSnitch.checkCollision(this.player)) {
+        if (this.goldenSnitch.active && this.goldenSnitch.checkCollision(this.player)) {
+            console.log("Pomo de ouro coletado!");
             this.goldenSnitch.active = false;
             this.player.setInvincible(300);
+            this.score += 50; // Bônus por pegar o pomo
             audioManager.playSfx(audioManager.sfx.powerup, "G5", "0.5s", Tone.now());
         }
         
         // Verificar colisão com sapo de chocolate
-        if (this.chocolateFrog.checkCollision(this.player)) {
+        if (this.chocolateFrog.active && this.chocolateFrog.checkCollision(this.player)) {
+            console.log("Sapo de chocolate coletado!");
             this.chocolateFrog.active = false;
             if (this.lives < 3) {
                 this.lives++;
@@ -469,9 +479,21 @@ class Game {
     resolveSpellEvent() {
         console.log("Resolvendo evento de feitiço...");
         
-        // Desativar o dementador
-        this.dementor.active = false;
-        this.dementor.x = -this.dementor.width; // Mover para fora da tela
+        // Efeito visual de luz ao lançar o feitiço
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.8)';
+            setTimeout(() => {
+                canvas.style.boxShadow = 'none';
+            }, 500);
+        }
+        
+        // Desativar o dementador com animação
+        if (this.dementor.active) {
+            // Efeito de "desaparecimento" - poderia ser substituído por uma animação mais elaborada
+            this.dementor.active = false;
+            this.dementor.x = -this.dementor.width; // Mover para fora da tela
+        }
         
         // Ocultar o modal de feitiço
         this.ui.hideSpellModal();
@@ -485,8 +507,11 @@ class Game {
             
             // Mostrar notificação de sucesso
             this.ui.notification.text = "Expecto Patronum!";
-            this.ui.notification.timer = 120;
+            this.ui.notification.timer = 180; // Duração maior para melhor visibilidade
             this.ui.notification.alpha = 1.0;
+            
+            // Bônus de pontuação por derrotar o dementador
+            this.score += 25;
         }
     }
     

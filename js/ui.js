@@ -77,73 +77,95 @@ class UIManager {
         // Verificar e garantir elementos da UI
         this.ensureUIElements();
         
-        // Configurar botão iniciar
+        // Armazenar a referência ao jogo para acesso global
+        window.game = game;
+        
+        // Configurar botão iniciar com addEventListener
         if (this.startButton) {
-            this.startButton.onclick = (e) => { 
+            const newStartButton = this.startButton.cloneNode(true);
+            this.startButton.parentNode.replaceChild(newStartButton, this.startButton);
+            this.startButton = newStartButton;
+            
+            this.startButton.addEventListener('click', (e) => { 
                 e.stopPropagation();
                 e.preventDefault();
+                console.log("Botão iniciar clicado");
                 game.startGame();
                 return false;
-            };
+            });
         }
         
-        // Configurar botão de pausa
+        // Configurar botão de pausa com addEventListener
         if (this.pauseButton) {
-            this.pauseButton.onclick = (e) => {
+            const newPauseButton = this.pauseButton.cloneNode(true);
+            this.pauseButton.parentNode.replaceChild(newPauseButton, this.pauseButton);
+            this.pauseButton = newPauseButton;
+            
+            // Estilizar o botão de pausa para ser mais visível
+            this.pauseButton.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            this.pauseButton.style.color = '#F6E05E';
+            this.pauseButton.style.border = '2px solid #F6E05E';
+            this.pauseButton.style.cursor = 'pointer';
+            this.pauseButton.style.zIndex = '100';
+            this.pauseButton.style.pointerEvents = 'auto';
+            
+            this.pauseButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log("Botão de pausa clicado");
                 game.togglePause();
                 return false;
-            };
+            });
         }
         
-        // Configurar botão de retomar jogo
+        // Configurar botão de retomar jogo com addEventListener
         if (this.resumeButton) {
-            this.resumeButton.onclick = (e) => {
+            const newResumeButton = this.resumeButton.cloneNode(true);
+            this.resumeButton.parentNode.replaceChild(newResumeButton, this.resumeButton);
+            this.resumeButton = newResumeButton;
+            
+            this.resumeButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log("Botão retomar clicado");
                 game.togglePause();
                 return false;
-            };
+            });
         }
         
-        // Configurar botão de som
+        // Configurar botão de som com addEventListener
         if (this.soundButton) {
-            this.soundButton.onclick = (e) => {
+            const newSoundButton = this.soundButton.cloneNode(true);
+            this.soundButton.parentNode.replaceChild(newSoundButton, this.soundButton);
+            this.soundButton = newSoundButton;
+            
+            this.soundButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log("Botão de som clicado");
                 const isSoundOn = audioManager.toggleSound();
                 this.soundButton.textContent = `Som: ${isSoundOn ? 'Ligado' : 'Desligado'}`;
                 return false;
-            };
+            });
         }
         
-        // Configurar botão de menu no pauseMenu
+        // Configurar botão de menu no pauseMenu com addEventListener
         if (this.menuButton) {
-            this.menuButton.onclick = (e) => {
+            const newMenuButton = this.menuButton.cloneNode(true);
+            this.menuButton.parentNode.replaceChild(newMenuButton, this.menuButton);
+            this.menuButton = newMenuButton;
+            
+            this.menuButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log("Botão de menu clicado");
                 game.returnToMenu();
                 return false;
-            };
+            });
         }
         
-        // Configurar botão de feitiço (inicial)
-        // O setupSpellButton será chamado quando o modal for exibido
-        if (this.spellButton) {
-            this.spellButton.onclick = (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log("Botão de feitiço clicado (configuração inicial)");
-                
-                if (game.gameState === 'spellCasting') {
-                    audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
-                    game.score += 10;
-                    game.resolveSpellEvent();
-                }
-                
-                return false;
-            };
-        }
+        // Configuração inicial do botão de feitiço
+        // Uma configuração mais completa é feita em setupSpellButton
+        this.setupSpellButton();
         
         // Configurar os botões da tela Game Over
-        this.setupGameOverButtons(game);
+        this.setupGameOverButtons();
         
         // Configurar eventos globais de input
         window.addEventListener('mousedown', () => game.handleInput());
@@ -152,9 +174,15 @@ class UIManager {
             game.handleInput(); 
         });
         window.addEventListener('keydown', (e) => { 
-            if (e.code === 'Space') { game.handleInput(); }
-            if (e.code === 'Escape' || e.code === 'KeyP') { game.togglePause(); }
+            if (e.code === 'Space' && game.gameState === 'playing') { 
+                game.handleInput(); 
+            }
+            if (e.code === 'Escape' || e.code === 'KeyP') { 
+                game.togglePause(); 
+            }
         });
+        
+        console.log("Todos os eventos de UI configurados com sucesso");
     }
     
     // Garante que todos os elementos da UI existem
@@ -491,11 +519,56 @@ class UIManager {
     }
     
     showPauseMenu() {
+        if (!this.pauseMenu) {
+            this.pauseMenu = document.getElementById('pauseMenu');
+            if (!this.pauseMenu) return;
+        }
+        
+        // Remover classes que possam estar ocultando o menu
         this.pauseMenu.classList.remove('hidden');
+        this.pauseMenu.classList.remove('fade-out');
+        
+        // Forçar visibilidade do menu com estilo inline explícito
+        this.pauseMenu.style.display = 'block';
+        this.pauseMenu.style.visibility = 'visible';
+        this.pauseMenu.style.opacity = '1';
+        this.pauseMenu.style.zIndex = '250'; // Colocar acima de outros elementos
+        this.pauseMenu.style.position = 'absolute';
+        this.pauseMenu.style.top = '50%';
+        this.pauseMenu.style.left = '50%';
+        this.pauseMenu.style.transform = 'translate(-50%, -50%)';
+        this.pauseMenu.style.pointerEvents = 'auto';
+        
+        // Garantir que o ui-layer permita eventos
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.classList.remove('pointer-events-none');
+            uiLayer.classList.add('pointer-events-auto');
+        }
+        
+        // Atualizar o botão de som com o estado atual
+        if (this.soundButton && window.audioManager) {
+            const isSoundOn = window.audioManager.isSoundOn();
+            this.soundButton.textContent = `Som: ${isSoundOn ? 'Ligado' : 'Desligado'}`;
+        }
+        
+        console.log("Menu de pausa exibido:", this.pauseMenu);
     }
     
     hidePauseMenu() {
+        if (!this.pauseMenu) {
+            this.pauseMenu = document.getElementById('pauseMenu');
+            if (!this.pauseMenu) return;
+        }
+        
+        // Ocultar o menu com métodos completos
         this.pauseMenu.classList.add('hidden');
+        this.pauseMenu.classList.add('fade-out');
+        this.pauseMenu.style.display = 'none';
+        this.pauseMenu.style.visibility = 'hidden';
+        this.pauseMenu.style.opacity = '0';
+        
+        console.log("Menu de pausa ocultado");
     }
     
     showSpellModal() {
@@ -509,13 +582,18 @@ class UIManager {
         this.spellModal.classList.remove('hidden');
         this.spellModal.classList.remove('fade-out');
         
-        // Forçar visibilidade do modal
+        // Forçar visibilidade do modal com estilo inline explícito
         this.spellModal.style.display = 'block';
         this.spellModal.style.visibility = 'visible';
         this.spellModal.style.opacity = '1';
         this.spellModal.style.zIndex = '300'; // Colocar acima de outros elementos
+        this.spellModal.style.position = 'absolute';
+        this.spellModal.style.top = '50%';
+        this.spellModal.style.left = '50%';
+        this.spellModal.style.transform = 'translate(-50%, -50%)';
+        this.spellModal.style.pointerEvents = 'auto';
         
-        // Garantir que o botão do feitiço esteja funcional
+        // Garantir que o botão de feitiço esteja funcional
         this.setupSpellButton();
         
         // Garantir que o ui-layer permita eventos
@@ -524,23 +602,67 @@ class UIManager {
             uiLayer.classList.remove('pointer-events-none');
             uiLayer.classList.add('pointer-events-auto');
         }
+        
+        console.log("Modal de feitiço exibido:", this.spellModal);
     }
     
     hideSpellModal() {
-        if (!this.spellModal) return;
+        if (!this.spellModal) {
+            this.spellModal = document.getElementById('spellModal');
+            if (!this.spellModal) return;
+        }
         
-        // Ocultar o modal
+        // Ocultar o modal com métodos completos
         this.spellModal.classList.add('hidden');
+        this.spellModal.classList.add('fade-out');
         this.spellModal.style.display = 'none';
         this.spellModal.style.visibility = 'hidden';
+        this.spellModal.style.opacity = '0';
+        
+        // Limpar o evento de keydown específico do feitiço
+        if (this._spellKeyHandler) {
+            window.removeEventListener('keydown', this._spellKeyHandler);
+        }
+        
+        console.log("Modal de feitiço ocultado");
     }
     
     showPauseButton() {
+        if (!this.pauseButton) {
+            this.pauseButton = document.getElementById('pauseButton');
+            if (!this.pauseButton) return;
+        }
+        
+        // Remover a classe hidden
         this.pauseButton.classList.remove('hidden');
+        
+        // Forçar visibilidade
+        this.pauseButton.style.display = 'block';
+        this.pauseButton.style.visibility = 'visible';
+        this.pauseButton.style.opacity = '1';
+        
+        // Garantir interatividade
+        this.pauseButton.style.pointerEvents = 'auto';
+        this.pauseButton.style.cursor = 'pointer';
+        
+        console.log("Botão de pausa exibido");
     }
     
     hidePauseButton() {
+        if (!this.pauseButton) {
+            this.pauseButton = document.getElementById('pauseButton');
+            if (!this.pauseButton) return;
+        }
+        
+        // Adicionar a classe hidden
         this.pauseButton.classList.add('hidden');
+        
+        // Forçar invisibilidade
+        this.pauseButton.style.display = 'none';
+        this.pauseButton.style.visibility = 'hidden';
+        this.pauseButton.style.opacity = '0';
+        
+        console.log("Botão de pausa ocultado");
     }
     
     // Configura o botão de feitiço para garantir que funcione
@@ -555,13 +677,17 @@ class UIManager {
         this.spellButton.parentNode.replaceChild(newSpellButton, this.spellButton);
         this.spellButton = newSpellButton;
         
-        // Garantir visibilidade e interatividade
+        // Garantir visibilidade e interatividade com estilos explícitos
         this.spellButton.style.pointerEvents = 'auto';
         this.spellButton.style.cursor = 'pointer';
+        this.spellButton.style.display = 'block';
+        this.spellButton.style.backgroundColor = '#3b82f6'; // Azul para destaque visual
+        this.spellButton.style.border = '2px solid #93c5fd'; // Borda para destaque
+        this.spellButton.style.padding = '10px 20px';
         this.spellButton.disabled = false;
         
-        // Adicionar evento de clique
-        this.spellButton.onclick = (e) => {
+        // Adicionar evento de clique com verificação completa
+        this.spellButton.addEventListener('click', (e) => {
             e.stopPropagation();
             e.preventDefault();
             
@@ -574,17 +700,30 @@ class UIManager {
             }
             
             return false;
-        };
+        });
         
-        // Adicionar evento de teclado para o botão Espaço lançar o feitiço
-        window.addEventListener('keydown', (e) => { 
+        // Remover eventos de teclado anteriores para evitar duplicação
+        // Usamos uma função nomeada para poder removê-la depois
+        if (this._spellKeyHandler) {
+            window.removeEventListener('keydown', this._spellKeyHandler);
+        }
+        
+        // Adicionar novo evento de teclado para o botão Espaço lançar o feitiço
+        this._spellKeyHandler = (e) => { 
             if (e.code === 'Space' && window.game && window.game.gameState === 'spellCasting') {
                 console.log("Tecla Espaço pressionada para lançar feitiço!");
                 audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
                 window.game.score += 10;
                 window.game.resolveSpellEvent();
+                
+                // Impedir comportamento padrão
+                e.preventDefault();
+                e.stopPropagation();
             }
-        });
+        };
+        
+        window.addEventListener('keydown', this._spellKeyHandler);
+        console.log("Botão de feitiço configurado com sucesso:", this.spellButton);
     }
     
     updateSpellTimerBar(percentage) {
