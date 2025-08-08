@@ -331,8 +331,11 @@ class Game {
     }
     
     spawnChocolateFrog() {
-        if (this.score > 10 && this.lives < 3 && !this.chocolateFrog.active && this.frame % 600 === 0 && Math.random() < 0.4) {
+        // Aumentada a frequência e probabilidade dos sapos de chocolate
+        // Removida a limitação de vidas para que apareçam mesmo com vida cheia
+        if (this.score > 5 && !this.chocolateFrog.active && this.frame % 400 === 0 && Math.random() < 0.6) {
             this.chocolateFrog.spawn();
+            console.log("Sapo de chocolate gerado!");
         }
     }
     
@@ -378,9 +381,21 @@ class Game {
         if (this.chocolateFrog.active && this.chocolateFrog.checkCollision(this.player)) {
             console.log("Sapo de chocolate coletado!");
             this.chocolateFrog.active = false;
+            
             if (this.lives < 3) {
+                // Adiciona vida se o jogador tem menos de 3 vidas
                 this.lives++;
                 audioManager.playSfx(audioManager.sfx.lifeUp, "A5", "8n", Tone.now());
+                this.ui.notification.text = "+1 Vida!";
+                this.ui.notification.timer = 120;
+                this.ui.notification.alpha = 1.0;
+            } else {
+                // Se o jogador já tem todas as vidas, ganha pontos extras
+                this.score += 15;
+                audioManager.playSfx(audioManager.sfx.score, "C6", "8n", Tone.now());
+                this.ui.notification.text = "+15 Pontos!";
+                this.ui.notification.timer = 120;
+                this.ui.notification.alpha = 1.0;
             }
         }
     }

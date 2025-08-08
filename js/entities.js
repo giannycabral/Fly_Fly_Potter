@@ -188,7 +188,20 @@ class ChocolateFrog {
     spawn() {
         this.active = true;
         this.x = CONFIG.BASE_WIDTH;
-        this.y = Math.random() * (CONFIG.BASE_HEIGHT - CONFIG.groundHeight - 150) + 75;
+        
+        // Ajustando para que os sapos apareçam em alturas mais acessíveis
+        // Dividimos a área jogável em 3 zonas e escolhemos uma aleatoriamente
+        const zone = Math.floor(Math.random() * 3);
+        if (zone === 0) {
+            // Zona superior
+            this.y = Math.random() * 150 + 100;
+        } else if (zone === 1) {
+            // Zona central
+            this.y = Math.random() * 150 + 250;
+        } else {
+            // Zona inferior
+            this.y = Math.random() * 100 + 400;
+        }
     }
     
     checkCollision(player) {
