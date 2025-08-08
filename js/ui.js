@@ -1,9 +1,7 @@
 // Gerencia a interface do usuário do jogo
 class UIManager {
     constructor() {
-        // Verificar e registrar elementos importantes
-        console.log("UIManager construtor iniciado");
-        
+        // Capturar e armazenar referências a elementos importantes da interface
         this.startScreen = document.getElementById('startScreen');
         this.gameOverScreen = document.getElementById('gameOverScreen');
         this.pauseMenu = document.getElementById('pauseMenu');
@@ -21,122 +19,133 @@ class UIManager {
         this.broomSelectionContainer = document.getElementById('broomSelection');
         this.characterSelectionContainer = document.getElementById('characterSelection');
         
-        console.log("Elementos UI encontrados:", {
-            startScreen: this.startScreen,
-            broomSelectionContainer: this.broomSelectionContainer,
-            characterSelectionContainer: this.characterSelectionContainer
-        });
+        // Garantir que o ui-layer permita interações
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.classList.remove('pointer-events-none');
+            uiLayer.classList.add('pointer-events-auto');
+        }
         
         // Notificação de cenário
         this.notification = { text: '', timer: 0, alpha: 0 };
+        
+        // Configurar observador para a tela de Game Over
+        this.setupGameOverObserver();
+    }
+    
+    // Monitora e corrige problemas com a tela de Game Over
+    setupGameOverObserver() {
+        if (!this.gameOverScreen) return;
+        
+        const self = this;
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                // Quando a tela de Game Over muda, verificamos se os botões estão funcionando
+                if (self.gameOverScreen.style.display === 'block' && 
+                    self.gameOverScreen.style.visibility === 'visible') {
+                    self.ensureGameOverButtonsFunctionality();
+                }
+            });
+        });
+        
+        // Observar mudanças na tela de Game Over
+        observer.observe(this.gameOverScreen, {
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+    
+    // Garante que os botões da tela de Game Over funcionem corretamente
+    ensureGameOverButtonsFunctionality() {
+        // Verificar se temos acesso ao jogo
+        if (!window.game) return;
+        
+        // Garantir que o botão "Tentar Novamente" funcione
+        if (this.restartButton) {
+            this.restartButton.style.pointerEvents = 'auto';
+            this.restartButton.style.cursor = 'pointer';
+        }
+        
+        // Garantir que o botão "Menu Principal" funcione
+        if (this.menuFromGameOverButton) {
+            this.menuFromGameOverButton.style.pointerEvents = 'auto';
+            this.menuFromGameOverButton.style.cursor = 'pointer';
+        }
     }
     
     setupEventListeners(game) {
-        console.log("Configurando event listeners do UI");
+        // Verificar e garantir elementos da UI
+        this.ensureUIElements();
         
-        // Verifica se o botão start existe
-        if (!this.startButton) {
-            console.error("Botão iniciar jogo não encontrado!");
-            
-            // Tenta encontrá-lo novamente
-            this.startButton = document.getElementById('startButton');
-            if (!this.startButton) {
-                console.error("Botão iniciar jogo realmente não existe!");
-                return; // Sai da função se não encontrar
-            }
-        }
-        
-        // Adiciona evento ao botão iniciar
-        console.log("Adicionando evento ao botão iniciar");
-        this.startButton.addEventListener('click', (e) => { 
-            console.log("Botão iniciar clicado!");
-            e.stopPropagation();
-            e.preventDefault();
-            game.startGame(); 
-        });
-        
-        // Adiciona evento de dupla segurança
-        this.startButton.onclick = function(e) {
-            console.log("Clique alternativo no botão iniciar");
-            e.stopPropagation();
-            e.preventDefault();
-            game.startGame();
-            return false;
-        };
-        
-        this.pauseButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            game.togglePause();
-        });
-        
-        this.resumeButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            game.togglePause();
-        });
-
-        this.soundButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isSoundOn = audioManager.toggleSound();
-            this.soundButton.textContent = `Som: ${isSoundOn ? 'Ligado' : 'Desligado'}`;
-        });
-
-        this.menuButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            game.returnToMenu();
-        });
-
-        // Botão Tentar Novamente na tela de Game Over - Implementação mais robusta
-        if (this.restartButton) {
-            // Removemos qualquer listener anterior para evitar duplicação
-            this.restartButton.replaceWith(this.restartButton.cloneNode(true));
-            this.restartButton = document.getElementById('restartButton');
-            
-            // Adicionamos um novo listener
-            this.restartButton.addEventListener('click', function(e) { 
+        // Configurar botão iniciar
+        if (this.startButton) {
+            this.startButton.onclick = (e) => { 
                 e.stopPropagation();
                 e.preventDefault();
-                console.log("Botão tentar novamente clicado");
-                game.restartFromGameOver();
+                game.startGame();
                 return false;
-            }, true);
-            
-            // Garantir que o botão tenha pointer-events
-            this.restartButton.style.pointerEvents = 'auto';
-            this.restartButton.style.cursor = 'pointer';
-        } else {
-            console.error("Botão restartButton não encontrado!");
+            };
         }
         
-        // Botão Menu Principal na tela de Game Over - Implementação mais robusta
-        if (this.menuFromGameOverButton) {
-            // Removemos qualquer listener anterior para evitar duplicação
-            this.menuFromGameOverButton.replaceWith(this.menuFromGameOverButton.cloneNode(true));
-            this.menuFromGameOverButton = document.getElementById('menuFromGameOverButton');
-            
-            // Adicionamos um novo listener
-            this.menuFromGameOverButton.addEventListener('click', function(e) { 
+        // Configurar botão de pausa
+        if (this.pauseButton) {
+            this.pauseButton.onclick = (e) => {
                 e.stopPropagation();
-                e.preventDefault();
-                console.log("Botão menu principal clicado");
+                game.togglePause();
+                return false;
+            };
+        }
+        
+        // Configurar botão de retomar jogo
+        if (this.resumeButton) {
+            this.resumeButton.onclick = (e) => {
+                e.stopPropagation();
+                game.togglePause();
+                return false;
+            };
+        }
+        
+        // Configurar botão de som
+        if (this.soundButton) {
+            this.soundButton.onclick = (e) => {
+                e.stopPropagation();
+                const isSoundOn = audioManager.toggleSound();
+                this.soundButton.textContent = `Som: ${isSoundOn ? 'Ligado' : 'Desligado'}`;
+                return false;
+            };
+        }
+        
+        // Configurar botão de menu no pauseMenu
+        if (this.menuButton) {
+            this.menuButton.onclick = (e) => {
+                e.stopPropagation();
                 game.returnToMenu();
                 return false;
-            }, true);
-            
-            // Garantir que o botão tenha pointer-events
-            this.menuFromGameOverButton.style.pointerEvents = 'auto';
-            this.menuFromGameOverButton.style.cursor = 'pointer';
-        } else {
-            console.error("Botão menuFromGameOverButton não encontrado!");
+            };
         }
-
-        this.spellButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (game.gameState !== 'spellCasting') return;
-            audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
-            game.score += 10;
-            game.resolveSpellEvent();
-        });
         
+        // Configurar botão de feitiço (inicial)
+        // O setupSpellButton será chamado quando o modal for exibido
+        if (this.spellButton) {
+            this.spellButton.onclick = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log("Botão de feitiço clicado (configuração inicial)");
+                
+                if (game.gameState === 'spellCasting') {
+                    audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
+                    game.score += 10;
+                    game.resolveSpellEvent();
+                }
+                
+                return false;
+            };
+        }
+        
+        // Configurar os botões da tela Game Over
+        this.setupGameOverButtons(game);
+        
+        // Configurar eventos globais de input
         window.addEventListener('mousedown', () => game.handleInput());
         window.addEventListener('touchstart', (e) => { 
             e.preventDefault(); 
@@ -146,6 +155,18 @@ class UIManager {
             if (e.code === 'Space') { game.handleInput(); }
             if (e.code === 'Escape' || e.code === 'KeyP') { game.togglePause(); }
         });
+    }
+    
+    // Garante que todos os elementos da UI existem
+    ensureUIElements() {
+        if (!this.startButton) this.startButton = document.getElementById('startButton');
+        if (!this.pauseButton) this.pauseButton = document.getElementById('pauseButton');
+        if (!this.resumeButton) this.resumeButton = document.getElementById('resumeButton');
+        if (!this.soundButton) this.soundButton = document.getElementById('soundButton');
+        if (!this.menuButton) this.menuButton = document.getElementById('menuButton');
+        if (!this.spellButton) this.spellButton = document.getElementById('spellButton');
+        if (!this.restartButton) this.restartButton = document.getElementById('restartButton');
+        if (!this.menuFromGameOverButton) this.menuFromGameOverButton = document.getElementById('menuFromGameOverButton');
     }
     
     setupCharacterSelection(onCharacterSelected) {
@@ -347,22 +368,20 @@ class UIManager {
     }
     
     showGameOverScreen(score, highScore) {
-        console.log("Mostrando tela de Game Over", score, highScore);
-        
+        // Verificar elementos necessários
         if (!this.gameOverScreen) {
-            console.error("Elemento gameOverScreen não encontrado");
-            return;
+            this.gameOverScreen = document.getElementById('gameOverScreen');
+            if (!this.gameOverScreen) return;
         }
         
         if (!this.finalScoreEl) {
-            console.error("Elemento finalScore não encontrado");
             this.finalScoreEl = document.getElementById('finalScore');
+            if (!this.finalScoreEl) return;
         }
         
-        // Atualizar pontuação
+        // Atualizar pontuação e recorde
         this.finalScoreEl.textContent = score;
         
-        // Exibir o recorde
         const highScoreDisplay = document.getElementById('highScoreDisplay');
         if (highScoreDisplay) {
             highScoreDisplay.textContent = highScore;
@@ -377,7 +396,7 @@ class UIManager {
             this.finalScoreEl.classList.remove('text-glow');
         }
         
-        // Forçar visibilidade da tela de Game Over
+        // Garantir visibilidade da tela de Game Over
         this.gameOverScreen.classList.remove('hidden');
         this.gameOverScreen.classList.remove('fade-out');
         this.gameOverScreen.style.display = 'block';
@@ -385,47 +404,8 @@ class UIManager {
         this.gameOverScreen.style.opacity = '1';
         this.gameOverScreen.style.zIndex = '200';
         
-        // Garantir que os botões estejam funcionando corretamente
-        const restartButton = document.getElementById('restartButton');
-        const menuButton = document.getElementById('menuFromGameOverButton');
-        
-        if (restartButton) {
-            restartButton.style.pointerEvents = 'auto';
-            restartButton.style.cursor = 'pointer';
-            restartButton.disabled = false;
-            
-            // Recriar o botão para garantir que não haja problemas com event listeners
-            const newRestartButton = restartButton.cloneNode(true);
-            restartButton.parentNode.replaceChild(newRestartButton, restartButton);
-            
-            // Adicionar event listener diretamente
-            newRestartButton.onclick = (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log("Botão tentar novamente clicado (direto)");
-                window.game.restartFromGameOver();
-                return false;
-            };
-        }
-        
-        if (menuButton) {
-            menuButton.style.pointerEvents = 'auto';
-            menuButton.style.cursor = 'pointer';
-            menuButton.disabled = false;
-            
-            // Recriar o botão para garantir que não haja problemas com event listeners
-            const newMenuButton = menuButton.cloneNode(true);
-            menuButton.parentNode.replaceChild(newMenuButton, menuButton);
-            
-            // Adicionar event listener diretamente
-            newMenuButton.onclick = (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log("Botão menu principal clicado (direto)");
-                window.game.returnToMenu();
-                return false;
-            };
-        }
+        // Configurar botões
+        this.setupGameOverButtons();
         
         // Garantir que o ui-layer permita eventos
         const uiLayer = document.getElementById('ui-layer');
@@ -433,8 +413,53 @@ class UIManager {
             uiLayer.classList.remove('pointer-events-none');
             uiLayer.classList.add('pointer-events-auto');
         }
+    }
+    
+    // Método separado para configurar os botões da tela Game Over
+    setupGameOverButtons() {
+        // Configurar botão "Tentar Novamente"
+        const restartButton = document.getElementById('restartButton');
+        if (restartButton) {
+            // Limpar eventos anteriores
+            const newRestartButton = restartButton.cloneNode(true);
+            restartButton.parentNode.replaceChild(newRestartButton, restartButton);
+            this.restartButton = newRestartButton;
+            
+            // Garantir visibilidade e interatividade
+            this.restartButton.style.pointerEvents = 'auto';
+            this.restartButton.style.cursor = 'pointer';
+            this.restartButton.disabled = false;
+            
+            // Adicionar evento de clique
+            this.restartButton.onclick = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (window.game) window.game.restartFromGameOver();
+                return false;
+            };
+        }
         
-        console.log("Tela de Game Over configurada:", this.gameOverScreen);
+        // Configurar botão "Menu Principal"
+        const menuButton = document.getElementById('menuFromGameOverButton');
+        if (menuButton) {
+            // Limpar eventos anteriores
+            const newMenuButton = menuButton.cloneNode(true);
+            menuButton.parentNode.replaceChild(newMenuButton, menuButton);
+            this.menuFromGameOverButton = newMenuButton;
+            
+            // Garantir visibilidade e interatividade
+            this.menuFromGameOverButton.style.pointerEvents = 'auto';
+            this.menuFromGameOverButton.style.cursor = 'pointer';
+            this.menuFromGameOverButton.disabled = false;
+            
+            // Adicionar evento de clique
+            this.menuFromGameOverButton.onclick = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (window.game) window.game.returnToMenu();
+                return false;
+            };
+        }
     }
     
     hideGameOverScreen(callback) {
@@ -474,11 +499,40 @@ class UIManager {
     }
     
     showSpellModal() {
+        // Garantir que o modal de feitiço esteja completamente visível e interativo
+        if (!this.spellModal) {
+            this.spellModal = document.getElementById('spellModal');
+            if (!this.spellModal) return;
+        }
+        
+        // Remover classes que possam estar ocultando o modal
         this.spellModal.classList.remove('hidden');
+        this.spellModal.classList.remove('fade-out');
+        
+        // Forçar visibilidade do modal
+        this.spellModal.style.display = 'block';
+        this.spellModal.style.visibility = 'visible';
+        this.spellModal.style.opacity = '1';
+        this.spellModal.style.zIndex = '300'; // Colocar acima de outros elementos
+        
+        // Garantir que o botão do feitiço esteja funcional
+        this.setupSpellButton();
+        
+        // Garantir que o ui-layer permita eventos
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.classList.remove('pointer-events-none');
+            uiLayer.classList.add('pointer-events-auto');
+        }
     }
     
     hideSpellModal() {
+        if (!this.spellModal) return;
+        
+        // Ocultar o modal
         this.spellModal.classList.add('hidden');
+        this.spellModal.style.display = 'none';
+        this.spellModal.style.visibility = 'hidden';
     }
     
     showPauseButton() {
@@ -489,7 +543,56 @@ class UIManager {
         this.pauseButton.classList.add('hidden');
     }
     
+    // Configura o botão de feitiço para garantir que funcione
+    setupSpellButton() {
+        if (!this.spellButton) {
+            this.spellButton = document.getElementById('spellButton');
+            if (!this.spellButton) return;
+        }
+        
+        // Remover qualquer evento anterior para evitar duplicação
+        const newSpellButton = this.spellButton.cloneNode(true);
+        this.spellButton.parentNode.replaceChild(newSpellButton, this.spellButton);
+        this.spellButton = newSpellButton;
+        
+        // Garantir visibilidade e interatividade
+        this.spellButton.style.pointerEvents = 'auto';
+        this.spellButton.style.cursor = 'pointer';
+        this.spellButton.disabled = false;
+        
+        // Adicionar evento de clique
+        this.spellButton.onclick = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            console.log("Botão Expecto Patronum clicado!");
+            
+            if (window.game && window.game.gameState === 'spellCasting') {
+                audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
+                window.game.score += 10;
+                window.game.resolveSpellEvent();
+            }
+            
+            return false;
+        };
+        
+        // Adicionar evento de teclado para o botão Espaço lançar o feitiço
+        window.addEventListener('keydown', (e) => { 
+            if (e.code === 'Space' && window.game && window.game.gameState === 'spellCasting') {
+                console.log("Tecla Espaço pressionada para lançar feitiço!");
+                audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
+                window.game.score += 10;
+                window.game.resolveSpellEvent();
+            }
+        });
+    }
+    
     updateSpellTimerBar(percentage) {
+        if (!this.timerBarInner) {
+            this.timerBarInner = document.getElementById('timerBarInner');
+            if (!this.timerBarInner) return;
+        }
+        
         this.timerBarInner.style.width = `${percentage}%`;
     }
     

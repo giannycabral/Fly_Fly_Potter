@@ -168,15 +168,43 @@ class Game {
     }
     
     updateSpellCasting() {
+        // Atualizar o temporizador do feitiço
         this.spellTimer--;
-        this.ui.updateSpellTimerBar((this.spellTimer / CONFIG.SPELL_TIME_LIMIT) * 100);
-        this.dementor.update(this.frame); // Dementador continua a mover-se
         
+        // Atualizar a barra de progresso
+        this.ui.updateSpellTimerBar((this.spellTimer / CONFIG.SPELL_TIME_LIMIT) * 100);
+        
+        // Mudar a cor da barra conforme o tempo diminui
+        const timerBarInner = document.getElementById('timerBarInner');
+        if (timerBarInner) {
+            if (this.spellTimer < CONFIG.SPELL_TIME_LIMIT * 0.3) {
+                timerBarInner.style.backgroundColor = '#ef4444'; // Vermelho quando o tempo está acabando
+            } else if (this.spellTimer < CONFIG.SPELL_TIME_LIMIT * 0.6) {
+                timerBarInner.style.backgroundColor = '#fde047'; // Amarelo quando na metade do tempo
+            }
+        }
+        
+        // O dementador continua se movendo
+        this.dementor.update(this.frame);
+        
+        // Verificar se o tempo acabou
         if (this.spellTimer <= 0) {
+            console.log("Tempo esgotado para lançar o feitiço!");
             audioManager.playSfx(audioManager.sfx.fail, "C3", "4n", Tone.now());
             this.loseLife();
             this.resolveSpellEvent();
         }
+        
+        // Verificar input de espaço para lançar o feitiço
+        document.onkeydown = (e) => {
+            if (e.code === 'Space') {
+                console.log("Espaço pressionado durante o modo spellCasting");
+                audioManager.playSfx(audioManager.sfx.patronus, ["C4", "E4", "G4"], "2n", Tone.now());
+                this.score += 10;
+                this.resolveSpellEvent();
+                document.onkeydown = null; // Remover o evento após uso
+            }
+        };
     }
     
     drawGame() {
@@ -306,16 +334,28 @@ class Game {
     }
     
     checkCollisions() {
-        // Verificar colisão com dementador
-        if (this.dementor.active && this.dementor.x > -this.dementor.width) {
+        // Verificar colisão com dementador e iniciar evento de feitiço
+        if (this.dementor.active && this.gameState === 'playing' && this.dementor.x > -this.dementor.width) {
+            console.log("Dementador detectado! Iniciando modo de feitiço...");
+            
+            // Mudar o estado do jogo para lançamento de feitiço
             this.gameState = 'spellCasting';
+            
+            // Iniciar temporizador para o feitiço
             this.spellTimer = CONFIG.SPELL_TIME_LIMIT;
+            
+            // Mostrar o modal de feitiço
             this.ui.showSpellModal();
+            
+            // Reproduzir som de alerta
+            audioManager.playSfx(audioManager.sfx.hit, "D2", "4n", Tone.now());
         }
         
-        // Verificar colisão com dementador (sem iniciar modal)
-        if (this.dementor.checkCollision(this.player)) {
+        // Verificar colisão direta com dementador
+        if (this.dementor.active && this.dementor.checkCollision(this.player) && this.gameState !== 'spellCasting') {
+            console.log("Colisão com dementador!");
             this.loseLife();
+            this.dementor.active = false;
         }
         
         // Verificar colisão com pomo de ouro
@@ -349,69 +389,39 @@ class Game {
     }
     
     endGame() {
+        // Evitar múltiplas chamadas se já estiver no estado gameOver
         if (this.gameState === 'gameOver') return;
         
-        console.log("Fim de jogo! Pontuação:", this.score);
+        // Atualizar estado do jogo
         this.gameState = 'gameOver';
         this.ui.hidePauseButton();
         
+        // Atualizar recorde se necessário
         if (this.score > this.highScore) {
             this.highScore = this.score;
             localStorage.setItem('flyflypotter_highscore', this.highScore);
         }
         
-        // Primeiro, garanta que o canvas pare de atualizar
+        // Parar a animação do jogo
         cancelAnimationFrame(this.animationFrameId);
         
-        // Certifique-se de que os elementos da interface estão funcionando
+        // Garantir que a interface permita interações
         const uiLayer = document.getElementById('ui-layer');
         if (uiLayer) {
             uiLayer.classList.remove('pointer-events-none');
             uiLayer.classList.add('pointer-events-auto');
         }
         
-        // Pequeno atraso para garantir que a tela seja exibida após o último frame
+        // Exibir tela de Game Over com um pequeno atraso
         setTimeout(() => {
             this.ui.showGameOverScreen(this.score, this.highScore);
             
-            // Adicionar event listeners diretamente nos botões
-            const restartButton = document.getElementById('restartButton');
-            const menuButton = document.getElementById('menuFromGameOverButton');
-            
-            if (restartButton) {
-                // Remover qualquer listener anterior para evitar duplicação
-                const newRestartButton = restartButton.cloneNode(true);
-                restartButton.parentNode.replaceChild(newRestartButton, restartButton);
-                
-                newRestartButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log("Botão tentar novamente clicado (via endGame)");
-                    this.restartFromGameOver();
-                    return false;
-                });
-            }
-            
-            if (menuButton) {
-                // Remover qualquer listener anterior para evitar duplicação
-                const newMenuButton = menuButton.cloneNode(true);
-                menuButton.parentNode.replaceChild(newMenuButton, menuButton);
-                
-                newMenuButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log("Botão menu principal clicado (via endGame)");
-                    this.returnToMenu();
-                    return false;
-                });
-            }
-            
-            // Verificação adicional após um tempo para garantir que a tela aparece
+            // Verificação adicional para garantir que a tela aparece
             setTimeout(() => {
                 const gameOverScreen = document.getElementById('gameOverScreen');
-                if (gameOverScreen && (gameOverScreen.style.display !== 'block' || 
-                                       gameOverScreen.classList.contains('hidden'))) {
-                    console.log("Forçando exibição da tela Game Over novamente");
+                if (gameOverScreen && 
+                    (gameOverScreen.style.display !== 'block' || 
+                     gameOverScreen.classList.contains('hidden'))) {
                     this.ui.showGameOverScreen(this.score, this.highScore);
                 }
             }, 300);
@@ -457,11 +467,26 @@ class Game {
     }
     
     resolveSpellEvent() {
+        console.log("Resolvendo evento de feitiço...");
+        
+        // Desativar o dementador
         this.dementor.active = false;
+        this.dementor.x = -this.dementor.width; // Mover para fora da tela
+        
+        // Ocultar o modal de feitiço
         this.ui.hideSpellModal();
         
+        // Voltar ao estado normal do jogo se não for game over
         if (this.gameState !== 'gameOver') {
             this.gameState = 'playing';
+            
+            // Dar um breve período de invencibilidade após lançar o feitiço
+            this.player.setInvincible(60);
+            
+            // Mostrar notificação de sucesso
+            this.ui.notification.text = "Expecto Patronum!";
+            this.ui.notification.timer = 120;
+            this.ui.notification.alpha = 1.0;
         }
     }
     
