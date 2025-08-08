@@ -82,12 +82,12 @@ class Obstacle {
     }
     
     update() {
-        // Velocidade de movimento reduzida para não ficar rápido demais
-        this.x -= 1.5;
+        // Velocidade de movimento ainda mais reduzida para tornar o jogo mais fácil
+        this.x -= 0.9; // Reduzido ainda mais para deixar o jogo mais lento
         
         if (this.type === 'moving') {
             // Reduzir velocidade de movimento vertical também
-            this.gapY += (this.moveSpeed * 0.7) * this.moveDirection;
+            this.gapY += (this.moveSpeed * 0.4) * this.moveDirection; // Movimento vertical mais lento
             if (this.gapY <= this.initialGapY - this.moveRange || this.gapY >= this.initialGapY + this.moveRange) {
                 this.moveDirection *= -1;
             }

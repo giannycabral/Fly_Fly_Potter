@@ -31,39 +31,39 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Esperar um pouco para garantir que tudo esteja carregado
     setTimeout(() => {
-        // Inicializa o jogo
-        const game = new Game();
+        // Inicializa o jogo e o torna acessível globalmente
+        window.game = new Game();
         
         // Garantir que a tela inicial seja visível
-        game.ui.showStartScreen();
+        window.game.ui.showStartScreen();
         
         // Forçar renderização das telas de seleção
-        if (game.ui.characterSelectionContainer) {
-            game.ui.setupCharacterSelection((charKey) => {
+        if (window.game.ui.characterSelectionContainer) {
+            window.game.ui.setupCharacterSelection((charKey) => {
                 console.log("Personagem selecionado:", charKey);
-                game.selectedCharacterKey = charKey;
-                game.drawInitialScreen();
+                window.game.selectedCharacterKey = charKey;
+                window.game.drawInitialScreen();
             });
         }
         
-        if (game.ui.broomSelectionContainer) {
-            game.ui.setupBroomSelection((broomKey) => {
+        if (window.game.ui.broomSelectionContainer) {
+            window.game.ui.setupBroomSelection((broomKey) => {
                 console.log("Vassoura selecionada:", broomKey);
-                game.selectedBroomKey = broomKey;
-                game.drawInitialScreen();
+                window.game.selectedBroomKey = broomKey;
+                window.game.drawInitialScreen();
             });
         }
         
         // Redimensionar o canvas quando a janela for redimensionada
         window.addEventListener('resize', () => {
             // Garantir que o canvas mantenha suas dimensões base
-            game.canvas.width = CONFIG.BASE_WIDTH;
-            game.canvas.height = CONFIG.BASE_HEIGHT;
-            game.ctx.imageSmoothingEnabled = false;
+            window.game.canvas.width = CONFIG.BASE_WIDTH;
+            window.game.canvas.height = CONFIG.BASE_HEIGHT;
+            window.game.ctx.imageSmoothingEnabled = false;
             
             // Redesenha o estado atual
-            if (game.gameState === 'start' || game.gameState === 'gameOver') {
-                game.drawInitialScreen();
+            if (window.game.gameState === 'start' || window.game.gameState === 'gameOver') {
+                window.game.drawInitialScreen();
             }
         });
     }, 100);

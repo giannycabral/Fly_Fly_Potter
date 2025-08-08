@@ -4,11 +4,11 @@ const CONFIG = {
     BASE_HEIGHT: 640,
     SPELL_TIME_LIMIT: 180,
     
-    // Dados das Vassouras
+    // Dados das Vassouras - ajustados para controle muito mais suave
     brooms: {
-        shootingStar: { name: 'Shooting Star', description: 'Equilibrada e confiável.', lift: -10, gravity: 0.6, color: '#A0522D' },
-        nimbus2000: { name: 'Nimbus 2000', description: 'Rápida e ágil.', lift: -11, gravity: 0.7, color: '#5D4037' },
-        firebolt: { name: 'Firebolt', description: 'Velocidade máxima!', lift: -12, gravity: 0.8, color: '#212121' }
+        shootingStar: { name: 'Shooting Star', description: 'Equilibrada e confiável.', lift: -8, gravity: 0.4, color: '#A0522D' },
+        nimbus2000: { name: 'Nimbus 2000', description: 'Rápida e ágil.', lift: -8.5, gravity: 0.45, color: '#5D4037' },
+        firebolt: { name: 'Firebolt', description: 'Velocidade máxima!', lift: -9, gravity: 0.5, color: '#212121' }
     },
     
     // Dados dos Personagens
@@ -22,7 +22,7 @@ const CONFIG = {
     obstacleProps: { 
         width: 78, 
         gap: 240, 
-        frequency: 150 // Aumentado para tornar o jogo mais fácil - menos obstáculos
+        frequency: 180 // Aumentado ainda mais para tornar o jogo mais fácil - menos obstáculos
     },
     
     // Propriedades dos feijõezinhos

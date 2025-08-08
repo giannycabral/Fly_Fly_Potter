@@ -22,7 +22,7 @@ class Bean {
     
     update() {
         // Reduzir velocidade para manter compatível com os obstáculos
-        this.x -= 1.5;
+        this.x -= 0.9; // Reduzido para deixar o jogo mais lento
     }
     
     checkCollision(player) {
@@ -74,8 +74,17 @@ class Dementor {
     spawn(playerY) {
         this.active = true;
         this.x = -this.width;
-        this.y = playerY + (Math.random() - 0.5) * 200;
         
+        // Limitar onde o dementador pode aparecer para evitar que fique muito difícil
+        const minY = 100; // Não muito alto
+        const maxY = CONFIG.BASE_HEIGHT - CONFIG.groundHeight - this.height - 50; // Não muito baixo
+        
+        // Ajustar posição do dementador baseado no jogador, mas com limitações
+        let targetY = playerY + (Math.random() - 0.5) * 150;
+        targetY = Math.max(minY, Math.min(maxY, targetY));
+        this.y = targetY;
+        
+        // Tocar som do dementador
         audioManager.playSfx(audioManager.sfx.dementor, "C2", "4n");
     }
     
@@ -116,8 +125,9 @@ class GoldenSnitch {
     update(frame) {
         if (!this.active) return;
         
-        this.x -= 4.5;
-        this.y += Math.sin(frame * 0.1) * this.speedY;
+        // Velocidade ainda mais reduzida
+        this.x -= 2.8; // Reduzido para deixar o jogo mais lento
+        this.y += Math.sin(frame * 0.08) * this.speedY; // Movimento mais suave
         
         if (this.x + this.width < 0) this.active = false;
     }
@@ -168,8 +178,9 @@ class ChocolateFrog {
     update(frame) {
         if (!this.active) return;
         
-        this.x -= 3;
-        this.y += Math.sin(frame * 0.2) * 2;
+        // Velocidade ainda mais reduzida
+        this.x -= 2.0; // Reduzido para deixar o jogo mais lento
+        this.y += Math.sin(frame * 0.15) * 1.2; // Movimento mais suave
         
         if (this.x + this.width < 0) this.active = false;
     }

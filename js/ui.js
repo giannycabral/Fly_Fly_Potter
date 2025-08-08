@@ -85,22 +85,48 @@ class UIManager {
             game.returnToMenu();
         });
 
-        // Botão Tentar Novamente na tela de Game Over
-        this.restartButton.addEventListener('click', (e) => { 
-            e.stopPropagation();
-            e.preventDefault();
-            console.log("Botão tentar novamente clicado");
-            game.restartFromGameOver();
-        });
+        // Botão Tentar Novamente na tela de Game Over - Implementação mais robusta
+        if (this.restartButton) {
+            // Removemos qualquer listener anterior para evitar duplicação
+            this.restartButton.replaceWith(this.restartButton.cloneNode(true));
+            this.restartButton = document.getElementById('restartButton');
+            
+            // Adicionamos um novo listener
+            this.restartButton.addEventListener('click', function(e) { 
+                e.stopPropagation();
+                e.preventDefault();
+                console.log("Botão tentar novamente clicado");
+                game.restartFromGameOver();
+                return false;
+            }, true);
+            
+            // Garantir que o botão tenha pointer-events
+            this.restartButton.style.pointerEvents = 'auto';
+            this.restartButton.style.cursor = 'pointer';
+        } else {
+            console.error("Botão restartButton não encontrado!");
+        }
         
-        // Botão Menu Principal na tela de Game Over
+        // Botão Menu Principal na tela de Game Over - Implementação mais robusta
         if (this.menuFromGameOverButton) {
-            this.menuFromGameOverButton.addEventListener('click', (e) => { 
+            // Removemos qualquer listener anterior para evitar duplicação
+            this.menuFromGameOverButton.replaceWith(this.menuFromGameOverButton.cloneNode(true));
+            this.menuFromGameOverButton = document.getElementById('menuFromGameOverButton');
+            
+            // Adicionamos um novo listener
+            this.menuFromGameOverButton.addEventListener('click', function(e) { 
                 e.stopPropagation();
                 e.preventDefault();
                 console.log("Botão menu principal clicado");
                 game.returnToMenu();
-            });
+                return false;
+            }, true);
+            
+            // Garantir que o botão tenha pointer-events
+            this.menuFromGameOverButton.style.pointerEvents = 'auto';
+            this.menuFromGameOverButton.style.cursor = 'pointer';
+        } else {
+            console.error("Botão menuFromGameOverButton não encontrado!");
         }
 
         this.spellButton.addEventListener('click', (e) => {
@@ -321,6 +347,19 @@ class UIManager {
     }
     
     showGameOverScreen(score, highScore) {
+        console.log("Mostrando tela de Game Over", score, highScore);
+        
+        if (!this.gameOverScreen) {
+            console.error("Elemento gameOverScreen não encontrado");
+            return;
+        }
+        
+        if (!this.finalScoreEl) {
+            console.error("Elemento finalScore não encontrado");
+            this.finalScoreEl = document.getElementById('finalScore');
+        }
+        
+        // Atualizar pontuação
         this.finalScoreEl.textContent = score;
         
         // Exibir o recorde
@@ -338,11 +377,73 @@ class UIManager {
             this.finalScoreEl.classList.remove('text-glow');
         }
         
+        // Forçar visibilidade da tela de Game Over
         this.gameOverScreen.classList.remove('hidden');
+        this.gameOverScreen.classList.remove('fade-out');
         this.gameOverScreen.style.display = 'block';
+        this.gameOverScreen.style.visibility = 'visible';
+        this.gameOverScreen.style.opacity = '1';
+        this.gameOverScreen.style.zIndex = '200';
+        
+        // Garantir que os botões estejam funcionando corretamente
+        const restartButton = document.getElementById('restartButton');
+        const menuButton = document.getElementById('menuFromGameOverButton');
+        
+        if (restartButton) {
+            restartButton.style.pointerEvents = 'auto';
+            restartButton.style.cursor = 'pointer';
+            restartButton.disabled = false;
+            
+            // Recriar o botão para garantir que não haja problemas com event listeners
+            const newRestartButton = restartButton.cloneNode(true);
+            restartButton.parentNode.replaceChild(newRestartButton, restartButton);
+            
+            // Adicionar event listener diretamente
+            newRestartButton.onclick = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log("Botão tentar novamente clicado (direto)");
+                window.game.restartFromGameOver();
+                return false;
+            };
+        }
+        
+        if (menuButton) {
+            menuButton.style.pointerEvents = 'auto';
+            menuButton.style.cursor = 'pointer';
+            menuButton.disabled = false;
+            
+            // Recriar o botão para garantir que não haja problemas com event listeners
+            const newMenuButton = menuButton.cloneNode(true);
+            menuButton.parentNode.replaceChild(newMenuButton, menuButton);
+            
+            // Adicionar event listener diretamente
+            newMenuButton.onclick = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log("Botão menu principal clicado (direto)");
+                window.game.returnToMenu();
+                return false;
+            };
+        }
+        
+        // Garantir que o ui-layer permita eventos
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.classList.remove('pointer-events-none');
+            uiLayer.classList.add('pointer-events-auto');
+        }
+        
+        console.log("Tela de Game Over configurada:", this.gameOverScreen);
     }
     
     hideGameOverScreen(callback) {
+        if (!this.gameOverScreen) {
+            console.error("Game Over Screen não encontrada!");
+            if (callback) callback();
+            return;
+        }
+        
         this.gameOverScreen.classList.add('fade-out');
         
         // Garantir que a tela de Game Over realmente fica oculta
@@ -352,6 +453,13 @@ class UIManager {
             this.gameOverScreen.style.display = 'none'; // Forçar display none
             this.gameOverScreen.style.visibility = 'hidden'; // Forçar visibility hidden
             this.gameOverScreen.style.opacity = '0'; // Forçar opacity 0
+            
+            // Garantir que o ui-layer esteja com pointer-events auto
+            const uiLayer = document.getElementById('ui-layer');
+            if (uiLayer) {
+                uiLayer.classList.remove('pointer-events-none');
+                uiLayer.classList.add('pointer-events-auto');
+            }
             
             if (callback) callback();
         }, 500);

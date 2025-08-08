@@ -119,7 +119,14 @@ class Game {
         
         if (this.gameState !== 'gameOver' && this.gameState !== 'paused') {
             this.frame++;
-            requestAnimationFrame(() => this.gameLoop());
+            this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        } else if (this.gameState === 'gameOver') {
+            // Se for game over, certifique-se que a tela está visível
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            if (gameOverScreen && (gameOverScreen.style.display !== 'block' || gameOverScreen.style.visibility !== 'visible')) {
+                console.log("Corrigindo visibilidade da tela de Game Over no gameLoop");
+                this.ui.showGameOverScreen(this.score, this.highScore);
+            }
         }
     }
     
@@ -344,6 +351,7 @@ class Game {
     endGame() {
         if (this.gameState === 'gameOver') return;
         
+        console.log("Fim de jogo! Pontuação:", this.score);
         this.gameState = 'gameOver';
         this.ui.hidePauseButton();
         
@@ -352,7 +360,62 @@ class Game {
             localStorage.setItem('flyflypotter_highscore', this.highScore);
         }
         
-        this.ui.showGameOverScreen(this.score, this.highScore);
+        // Primeiro, garanta que o canvas pare de atualizar
+        cancelAnimationFrame(this.animationFrameId);
+        
+        // Certifique-se de que os elementos da interface estão funcionando
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.classList.remove('pointer-events-none');
+            uiLayer.classList.add('pointer-events-auto');
+        }
+        
+        // Pequeno atraso para garantir que a tela seja exibida após o último frame
+        setTimeout(() => {
+            this.ui.showGameOverScreen(this.score, this.highScore);
+            
+            // Adicionar event listeners diretamente nos botões
+            const restartButton = document.getElementById('restartButton');
+            const menuButton = document.getElementById('menuFromGameOverButton');
+            
+            if (restartButton) {
+                // Remover qualquer listener anterior para evitar duplicação
+                const newRestartButton = restartButton.cloneNode(true);
+                restartButton.parentNode.replaceChild(newRestartButton, restartButton);
+                
+                newRestartButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("Botão tentar novamente clicado (via endGame)");
+                    this.restartFromGameOver();
+                    return false;
+                });
+            }
+            
+            if (menuButton) {
+                // Remover qualquer listener anterior para evitar duplicação
+                const newMenuButton = menuButton.cloneNode(true);
+                menuButton.parentNode.replaceChild(newMenuButton, menuButton);
+                
+                newMenuButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("Botão menu principal clicado (via endGame)");
+                    this.returnToMenu();
+                    return false;
+                });
+            }
+            
+            // Verificação adicional após um tempo para garantir que a tela aparece
+            setTimeout(() => {
+                const gameOverScreen = document.getElementById('gameOverScreen');
+                if (gameOverScreen && (gameOverScreen.style.display !== 'block' || 
+                                       gameOverScreen.classList.contains('hidden'))) {
+                    console.log("Forçando exibição da tela Game Over novamente");
+                    this.ui.showGameOverScreen(this.score, this.highScore);
+                }
+            }, 300);
+        }, 100);
     }
     
     resetGame() {
@@ -403,6 +466,7 @@ class Game {
     }
     
     returnToMenu() {
+        console.log("Retornando ao menu principal...");
         this.gameState = 'start';
         this.ui.hidePauseMenu();
         this.ui.hidePauseButton();
@@ -410,8 +474,22 @@ class Game {
         // Sempre ocultar a tela de game over quando voltamos ao menu
         // Isso garante que ela não ficará visível quando for acessada pelo botão "Menu Principal"
         this.ui.hideGameOverScreen(() => {
+            // Reiniciar o jogo antes de mostrar a tela inicial
+            this.resetGame();
+            
+            // Forçar a exibição dos elementos da tela inicial
+            const startScreen = document.getElementById('startScreen');
+            if (startScreen) {
+                startScreen.style.display = 'block';
+                startScreen.style.visibility = 'visible';
+                startScreen.style.opacity = '1';
+                startScreen.classList.remove('hidden');
+                startScreen.classList.remove('fade-out');
+            }
+            
             // Reconfiguramos os seletores de personagens e vassouras
             if (this.ui.characterSelectionContainer) {
+                this.ui.characterSelectionContainer.style.display = 'flex';
                 this.ui.setupCharacterSelection((charKey) => {
                     console.log("Personagem selecionado ao voltar ao menu:", charKey);
                     this.selectedCharacterKey = charKey;
@@ -420,6 +498,7 @@ class Game {
             }
             
             if (this.ui.broomSelectionContainer) {
+                this.ui.broomSelectionContainer.style.display = 'flex';
                 this.ui.setupBroomSelection((broomKey) => {
                     console.log("Vassoura selecionada ao voltar ao menu:", broomKey);
                     this.selectedBroomKey = broomKey;
@@ -428,13 +507,19 @@ class Game {
             }
             
             this.ui.showStartScreen();
-            this.resetGame();
             this.drawInitialScreen();
         });
     }
     
     restartFromGameOver() {
+        console.log("Reiniciando jogo após Game Over");
         // Reinicia com o mesmo personagem e vassoura
+        
+        // Certifique-se de que a animação anterior foi cancelada
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
+        
         this.ui.hideGameOverScreen(() => {
             this.resetGame();
             this.gameState = 'playing';
