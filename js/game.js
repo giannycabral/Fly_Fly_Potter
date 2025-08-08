@@ -573,7 +573,14 @@ class Game {
         this.ui.hideGameOverScreen(() => {
             this.resetGame();
             this.gameState = 'playing';
+            
+            // Mostrar o botão de pausa após reiniciar o jogo
+            this.ui.showPauseButton();
+            
+            // Iniciar o loop do jogo
             this.gameLoop();
+            
+            console.log("Jogo reiniciado e botão de pausa exibido");
         });
     }
     

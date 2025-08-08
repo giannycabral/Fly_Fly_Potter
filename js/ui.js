@@ -499,6 +499,9 @@ class UIManager {
         
         this.gameOverScreen.classList.add('fade-out');
         
+        // Mostrar o botão de pausa quando sair da tela de Game Over
+        this.showPauseButton();
+        
         // Garantir que a tela de Game Over realmente fica oculta
         setTimeout(() => {
             this.gameOverScreen.classList.add('hidden');
@@ -513,6 +516,8 @@ class UIManager {
                 uiLayer.classList.remove('pointer-events-none');
                 uiLayer.classList.add('pointer-events-auto');
             }
+            
+            console.log("Tela de Game Over ocultada e botão de pausa exibido");
             
             if (callback) callback();
         }, 500);
