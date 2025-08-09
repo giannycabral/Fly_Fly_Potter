@@ -20,7 +20,7 @@ class Background {
         let bgColor = '#2d3748';
         if (scenario === 'forest') bgColor = '#1E4620';
         if (scenario === 'quidditch') bgColor = '#87CEEB';
-        
+
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, CONFIG.BASE_WIDTH, CONFIG.BASE_HEIGHT);
 
@@ -33,6 +33,40 @@ class Background {
                 ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
                 ctx.fill();
             });
+        }
+
+        // Floresta Proibida: árvores e névoa no fundo
+        if (scenario === 'forest') {
+            // Árvores de fundo (camadas para profundidade)
+            for (let layer = 0; layer < 3; layer++) {
+                const treeCount = 7 + layer * 2;
+                const baseY = CONFIG.BASE_HEIGHT - CONFIG.groundHeight - 60 - layer * 30;
+                for (let i = 0; i < treeCount; i++) {
+                    const x = (i * CONFIG.BASE_WIDTH) / treeCount + (layer % 2 === 0 ? 0 : 30);
+                    const trunkH = 38 - layer * 7;
+                    const trunkW = 10 - layer * 2;
+                    // Tronco
+                    ctx.fillStyle = 'rgba(80, 60, 40, 0.7)';
+                    ctx.fillRect(x, baseY, trunkW, trunkH);
+                    // Copa
+                    ctx.beginPath();
+                    ctx.ellipse(x + trunkW / 2, baseY, 28 - layer * 6, 38 - layer * 8, 0, 0, 2 * Math.PI);
+                    ctx.fillStyle = layer === 0 ? 'rgba(34, 70, 34, 0.45)' : (layer === 1 ? 'rgba(44, 90, 44, 0.32)' : 'rgba(60, 120, 60, 0.18)');
+                    ctx.fill();
+                }
+            }
+            // Névoa
+            const now = performance.now();
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.ellipse(
+                    CONFIG.BASE_WIDTH * (0.2 + 0.2 * i) + Math.sin(now / 1200 + i) * 18,
+                    CONFIG.BASE_HEIGHT - CONFIG.groundHeight - 30 - i * 12,
+                    90 + i * 18, 18 + i * 7, 0, 0, 2 * Math.PI
+                );
+                ctx.fillStyle = 'rgba(220,220,220,0.08)';
+                ctx.fill();
+            }
         }
     }
 }
