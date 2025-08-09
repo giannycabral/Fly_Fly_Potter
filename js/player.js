@@ -114,6 +114,12 @@ class Player {
         
         if(this.visualEffect) {
             this.visualEffectTimer--;
+            
+            // Para o efeito 'invert', adicionamos uma chance de recuperação a cada frame
+            if (this.visualEffect === 'invert' && Math.random() < 0.01) {
+                this.visualEffectTimer -= 5; // Acelerar a recuperação aleatoriamente
+            }
+            
             if(this.visualEffectTimer <= 0) {
                 this.visualEffect = null;
                 this.width = this.baseWidth;
@@ -127,7 +133,14 @@ class Player {
     flap() {
         let currentLift = CONFIG.brooms[this.selectedBroomKey].lift;
         if (this.visualEffect === 'invert') {
-            currentLift = -currentLift;
+            // Reduzir o efeito de inversão para que não seja totalmente invertido
+            // Em vez de inverter completamente, apenas aplicamos uma força menor para cima
+            currentLift = currentLift * 0.3; // 30% da força normal
+            
+            // Adicionar uma força contrária limitada para que o jogador ainda possa ter algum controle
+            if (this.velocity > 5) {
+                this.velocity *= 0.7; // Reduz velocidade de queda se estiver caindo muito rápido
+            }
         }
         this.velocity = currentLift;
         audioManager.playSfx(audioManager.sfx.flap, "C5", "8n", Tone.now());
@@ -140,7 +153,20 @@ class Player {
     
     applyVisualEffect(effect, duration) {
         this.visualEffect = effect;
-        this.visualEffectTimer = duration;
+        
+        // Reduzir duração do efeito 'invert' para que não dure tanto tempo
+        if (effect === 'invert') {
+            this.visualEffectTimer = Math.min(duration, 60); // Máximo de 1 segundo (60 frames)
+            
+            // Adicionar notificação visual para o jogador saber o que está acontecendo
+            if (window.game && window.game.ui) {
+                window.game.ui.notification.text = "Controles Invertidos!";
+                window.game.ui.notification.timer = 60;
+                window.game.ui.notification.alpha = 1.0;
+            }
+        } else {
+            this.visualEffectTimer = duration;
+        }
         
         if (effect === 'resize') {
             const scale = Math.random() < 0.5 ? 0.5 : 1.5; // Encolher ou aumentar

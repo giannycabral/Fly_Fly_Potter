@@ -334,10 +334,18 @@ class Game {
                 } else {
                     audioManager.playSfx(audioManager.sfx.badBean, "C3", "8n", Tone.now());
                     
-                    const effects = ['rainbow', 'spin', 'invert', 'resize'];
+                    // Reduzir a probabilidade do efeito 'invert' que é o mais difícil de controlar
+                    let effects = ['rainbow', 'spin', 'resize'];
+                    
+                    // Adiciona 'invert' com probabilidade menor (apenas 15% de chance)
+                    if (Math.random() < 0.15) {
+                        effects.push('invert');
+                    }
+                    
                     const effect = effects[Math.floor(Math.random() * effects.length)];
                     
-                    this.player.applyVisualEffect(effect, 240); // 4 segundos
+                    // Duração reduzida para 3 segundos em vez de 4
+                    this.player.applyVisualEffect(effect, 180);
                 }
                 
                 this.beans.splice(i, 1);
