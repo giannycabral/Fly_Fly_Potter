@@ -783,11 +783,21 @@ class UIManager {
     
     showScenarioNotification(newScenario) {
         if (newScenario === 'forest') {
-            this.notification.text = "Floresta Proibida";
+            this.notification.text = "FLORESTA PROIBIDA!";
+            // Efeito visual quando entra na floresta
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.style.filter = 'brightness(0.7) sepia(0.3)';
+                setTimeout(() => {
+                    canvas.style.filter = 'none';
+                }, 1000);
+            }
+            // Som especial para a floresta
+            audioManager.playSfx(audioManager.sfx.hit, "A2", "2n", Tone.now());
         } else if (newScenario === 'quidditch') {
             this.notification.text = "Campo de Quadribol";
         }
-        this.notification.timer = 180;
+        this.notification.timer = 240; // Aumentado o tempo de exibição para 4 segundos
         this.notification.alpha = 1.0;
     }
     
@@ -797,9 +807,23 @@ class UIManager {
             if (this.notification.timer < 60) {
                 this.notification.alpha = this.notification.timer / 60;
             }
+            
+            // Verificar se é a notificação da Floresta Proibida para estilização especial
+            const isForest = this.notification.text.includes("FLORESTA PROIBIDA");
+            
             ctx.globalAlpha = this.notification.alpha;
-            ctx.fillStyle = '#FFF';
-            ctx.font = '24px "Press Start 2P"';
+            
+            if (isForest) {
+                // Adicionar sombra para destacar
+                ctx.shadowColor = 'rgba(0, 100, 0, 0.7)';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#22c55e'; // Verde para destacar
+                ctx.font = '26px "Press Start 2P"'; // Fonte um pouco maior
+            } else {
+                ctx.fillStyle = '#FFF';
+                ctx.font = '24px "Press Start 2P"';
+            }
+            
             ctx.textAlign = "center";
             ctx.shadowColor = 'black';
             ctx.shadowBlur = 5;

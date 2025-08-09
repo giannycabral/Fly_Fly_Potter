@@ -29,7 +29,7 @@ const CONFIG = {
     beanProps: {
         width: 12, 
         height: 20, 
-        frequency: 150,
+        frequency: 100, // Reduzido de 150 para 100 (aparecem com mais frequência)
         goodColors: ['#ef4444', '#22c55e', '#3b82f6', '#fde047'],
         badColors: ['#78716c', '#57534e', '#a3a3a3']
     },

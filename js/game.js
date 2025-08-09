@@ -133,7 +133,7 @@ class Game {
     updatePlaying() {
         // Atualizar cenário com base na pontuação
         if (this.score >= 40) this.scenario = 'quidditch';
-        else if (this.score >= 20) this.scenario = 'forest';
+        else if (this.score >= 15) this.scenario = 'forest'; // Reduzido de 20 para 15 pontos
         else this.scenario = 'castle';
 
         if (this.scenario !== this.previousScenario) {
@@ -294,7 +294,7 @@ class Game {
             }
             
             if (obstacle.isPassed(this.player.x)) {
-                this.score++;
+                this.score += 2; // Aumentado de 1 para 2 pontos por obstáculo
                 audioManager.playSfx(audioManager.sfx.score, "E6", "16n", Tone.now());
             }
         }
@@ -302,7 +302,7 @@ class Game {
     
     spawnBean() {
         if (this.frame > 200 && this.frame % CONFIG.beanProps.frequency === 0 && Math.random() < 0.5) {
-            const type = Math.random() < 0.7 ? 'good' : 'bad';
+            const type = Math.random() < 0.8 ? 'good' : 'bad'; // Aumentado para 80% de chance de feijões bons
             const color = type === 'good' 
                 ? CONFIG.beanProps.goodColors[Math.floor(Math.random() * CONFIG.beanProps.goodColors.length)]
                 : CONFIG.beanProps.badColors[Math.floor(Math.random() * CONFIG.beanProps.badColors.length)];
