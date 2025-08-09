@@ -110,7 +110,17 @@ class AudioManager {
                 console.log(`Usando AudioWorkletNode: ${usingWorklet}`);
                 
                 // Defina um volume global mais baixo para evitar sons muito altos
-                Tone.getContext().volume.value = -6; // -6dB
+                try {
+                    const context = Tone.getContext();
+                    if (context && context.volume) {
+                        context.volume.value = -6; // -6dB
+                    } else {
+                        console.log("Volume não disponível, usando masterVolume");
+                        this.masterVolume.volume.value = -6; // Alternativa usando masterVolume
+                    }
+                } catch (e) {
+                    console.log("Não foi possível ajustar o volume:", e);
+                }
             }
             return true;
         } catch (error) {
