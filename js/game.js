@@ -200,10 +200,37 @@ class Game {
         
         // Verificar se o tempo acabou
         if (this.spellTimer <= 0) {
-            console.log("Tempo esgotado para lançar o feitiço!");
+            console.log("Tempo esgotado para lançar o feitiço! O Dementador venceu!");
             audioManager.playSfx(audioManager.sfx.fail, "C3", "4n", Tone.now());
-            this.loseLife();
-            this.resolveSpellEvent();
+            
+            // Efeito visual de derrota - escurecer a tela
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.style.filter = 'brightness(0.5) grayscale(1)';
+            }
+            
+            // Exibir mensagem sobre o Dementador
+            this.ui.notification.text = "O Dementador levou sua alma!";
+            this.ui.notification.timer = 180;
+            this.ui.notification.alpha = 1.0;
+            
+            // Remover todas as vidas para causar game over
+            this.lives = 0;
+            
+            // Definir game over
+            this.gameState = 'gameOver';
+            
+            // Ocultar o modal de feitiço
+            this.ui.hideSpellModal();
+            
+            // Mostrar tela de game over com pequeno atraso para visualização do efeito
+            setTimeout(() => {
+                this.ui.showGameOverScreen(this.score, this.highScore);
+                // Restaurar filtro da tela
+                if (canvas) {
+                    canvas.style.filter = 'none';
+                }
+            }, 1500);
         }
         
         // Nota: Não configuramos event listeners de teclado aqui
@@ -353,6 +380,11 @@ class Game {
             
             // Mostrar o modal de feitiço
             this.ui.showSpellModal();
+            
+            // Mostrar notificação de alerta sobre o dementador
+            this.ui.notification.text = "DEMENTADOR! Use Expecto Patronum!";
+            this.ui.notification.timer = 180;
+            this.ui.notification.alpha = 1.0;
             
             // Reproduzir som de alerta
             audioManager.playSfx(audioManager.sfx.hit, "D2", "4n", Tone.now());

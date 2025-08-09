@@ -601,6 +601,41 @@ class UIManager {
         // Garantir que o botão de feitiço esteja funcional
         this.setupSpellButton();
         
+        // Adicionar animação de pulsação ao botão
+        if (this.spellButton) {
+            // Adicionar estilos CSS inline para pulsação
+            const style = document.createElement('style');
+            style.id = 'pulse-animation-style';
+            style.textContent = `
+                @keyframes pulse-spell {
+                    0% {
+                        transform: scale(1);
+                        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+                    }
+                    70% {
+                        transform: scale(1.05);
+                        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+                    }
+                    100% {
+                        transform: scale(1);
+                        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                    }
+                }
+            `;
+            
+            // Remover estilo antigo se existir
+            const oldStyle = document.getElementById('pulse-animation-style');
+            if (oldStyle) {
+                oldStyle.remove();
+            }
+            
+            document.head.appendChild(style);
+            
+            // Aplicar animação diretamente
+            this.spellButton.style.animation = 'pulse-spell 1.5s infinite';
+            this.spellButton.style.boxShadow = '0 0 10px rgba(59, 130, 246, 0.7)';
+        }
+        
         // Garantir que o ui-layer permita eventos
         const uiLayer = document.getElementById('ui-layer');
         if (uiLayer) {
@@ -623,6 +658,12 @@ class UIManager {
         this.spellModal.style.display = 'none';
         this.spellModal.style.visibility = 'hidden';
         this.spellModal.style.opacity = '0';
+        
+        // Remover animação do botão de feitiço
+        if (this.spellButton) {
+            this.spellButton.style.animation = 'none';
+            this.spellButton.style.boxShadow = 'none';
+        }
         
         // Limpar o evento de keydown específico do feitiço
         if (this._spellKeyHandler) {
