@@ -15,13 +15,31 @@
          
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
         <link rel="stylesheet" href="css/style.css">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
     </head>
     <body>
+        <!-- Mensagem para rotar a tela (inicialmente escondida) -->
+        <div id="rotation-message" class="hidden">
+            <div>
+                <p class="text-lg mb-4">Para melhor experiência, use o modo paisagem!</p>
+                <div style="margin: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" />
+                        <path d="M12 18h.01" />
+                        <path d="M7 2v20" />
+                        <path d="M17 2v20" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
         <div id="game-wrapper">
             <div id="game-container">
                 <h1 id="title" class="text-2x1 sm:text-4x1 md:text-5x1 text-shadow text-yellow-300">Fly Fly Potter</h1>
                 <canvas id="gameCanvas"></canvas>
                 <div id="pauseButton" class="hidden pointer-events-auto">||</div>
+                <div id="fullscreenButton" class="hidden pointer-events-auto">⛶</div>
                 <div id="ui-layer" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
 
                     <!-- Tela Inicial com instruções -->
@@ -70,6 +88,7 @@
         <script src="js/entities.js"></script>
         <script src="js/ui.js"></script>
         <script src="js/game.js"></script>
+        <script src="js/responsive.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>

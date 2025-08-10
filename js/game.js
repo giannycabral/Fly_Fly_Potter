@@ -52,6 +52,11 @@ class Game {
         
         this.ui.setupEventListeners(this);
         
+        // Inicializar o gerenciador de responsividade
+        if (window.responsiveManager) {
+            window.responsiveManager.init(this);
+        }
+        
         // Certifique-se de que a tela inicial seja visível
         this.ui.showStartScreen();
         

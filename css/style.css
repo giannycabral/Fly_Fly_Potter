@@ -12,13 +12,17 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 #game-container {
     position: relative;
     width: 100%;
     max-width: 800px; /* Largura máxima do jogo */
-    aspect-ratio: 800 / 640;
+    max-height: 100vh; /* Altura máxima para modo paisagem */
+    aspect-ratio: 800 / 640; /* Proporção base do jogo */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -36,6 +40,8 @@ canvas {
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    display: block;
+    touch-action: none; /* Impede comportamentos de toque padrão para evitar problemas em dispositivos móveis */
 }
 
 #ui-layer {
@@ -146,6 +152,23 @@ canvas {
     z-index: 100;
 }
 
+#fullscreenButton {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0,0,0,0.5);
+    border: 2px solid #F6E05E;
+    border-radius: 50%;
+    color: #F6E05E;
+    font-size: 20px;
+    line-height: 36px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 100;
+}
+
 #timerBar {
     width: 100%;
     height: 10px;
@@ -159,4 +182,123 @@ canvas {
     background-color: #4299e1;
     width: 100%;
     transition: width 0.1s linear;
+}
+
+/* Regras para responsividade */
+.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Estilos para a mensagem de rotação */
+#rotation-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+#rotation-message.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Estilos para dispositivos móveis em modo paisagem */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    #game-wrapper {
+        height: 100vh;
+        width: 100vw;
+        padding: 0;
+    }
+    
+    #game-container {
+        max-width: 100vh; /* Altura da viewport em modo paisagem */
+        max-height: 98vh; /* Quase toda a altura disponível */
+        width: auto; /* Deixa a largura ser calculada pelo aspect ratio */
+    }
+    
+    #title {
+        font-size: 1rem; /* Título menor em telas pequenas em paisagem */
+        top: 1%;
+    }
+    
+    /* Ajustes para telas muito baixas */
+    .text-lg {
+        font-size: 0.8rem;
+    }
+    
+    /* Otimizações para botões em telas menores */
+    .button-style {
+        padding: 0.5rem !important;
+        margin: 0.25rem !important;
+    }
+    
+    /* Aumentar tamanho do botão de pausa para facilitar o toque */
+    #pauseButton {
+        width: 50px;
+        height: 50px;
+        line-height: 46px;
+        font-size: 24px;
+        opacity: 0.7; /* Mais transparente para não atrapalhar a visualização */
+    }
+}
+
+/* Melhorias para controles de toque em dispositivos móveis */
+@media (hover: none) and (pointer: coarse) {
+    /* Otimizações específicas para dispositivos de toque */
+    .button-style {
+        padding: 15px 25px; /* Botões maiores para serem mais fáceis de tocar */
+    }
+    
+    .selection-container {
+        min-width: 70px; /* Aumentar tamanho para facilitar seleção por toque */
+        height: auto;
+    }
+}
+
+/* Detectar orientação paisagem em dispositivos móveis */
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+    body {
+        overflow: hidden; /* Garante que não haja scroll */
+    }
+    
+    /* Estilo para área de toque para flap */
+    #touch-area {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: 50;
+        background-color: transparent;
+    }
+}
+
+/* Estilos para tela cheia */
+:fullscreen {
+    background-color: #090a0f;
+    width: 100%;
+    height: 100%;
+}
+
+:-webkit-full-screen {
+    background-color: #090a0f;
+    width: 100%;
+    height: 100%;
+}
+
+:-moz-full-screen {
+    background-color: #090a0f;
+    width: 100%;
+    height: 100%;
 }
