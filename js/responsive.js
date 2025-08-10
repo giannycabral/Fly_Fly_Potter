@@ -59,6 +59,9 @@ class ResponsiveManager {
         const aspectRatio = window.innerWidth / window.innerHeight;
         const isInLandscapeMode = isLandscape || aspectRatio > 1.2;
         
+        // Armazenar o estado da orientação para uso em outras partes do jogo
+        this.isInLandscapeMode = isInLandscapeMode;
+        
         // Se for celular em modo paisagem, expandir o canvas para usar toda a tela disponível
         if (isMobileDevice && isInLandscapeMode) {
             // Em modo paisagem em celular, usar toda a tela disponível
@@ -75,18 +78,19 @@ class ResponsiveManager {
             this.gameContainer.style.width = '100vw';
             this.gameContainer.style.height = '100vh';
             
-            // Calcular a escala para preencher a tela inteira
+            // Calcular a escala para preencher a tela inteira, mantendo a proporção
+            // Usamos min aqui para garantir que nada seja cortado
             const scaleToFillX = screenWidth / this.originalWidth;
             const scaleToFillY = screenHeight / this.originalHeight;
             
-            // Usar a maior escala possível que preencha a tela
-            this.scaleRatio = Math.max(scaleToFillX, scaleToFillY);
+            // Usar a menor escala para garantir que todo o conteúdo seja visível
+            this.scaleRatio = Math.min(scaleToFillX, scaleToFillY);
             
             // Definir a escala CSS
             const scaledWidth = Math.floor(this.originalWidth * this.scaleRatio);
             const scaledHeight = Math.floor(this.originalHeight * this.scaleRatio);
             
-            // Centralizar o canvas para garantir que ele cubra a tela
+            // Centralizar o canvas para garantir que ele apareça no centro da tela
             this.gameContainer.style.transform = 'translate(-50%, -50%)';
             this.gameContainer.style.left = '50%';
             this.gameContainer.style.top = '50%';
@@ -120,6 +124,11 @@ class ResponsiveManager {
             
             console.log(`Canvas ajustado: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
         }
+        
+        // Informar ao jogo sobre a mudança de escala
+        if (window.game) {
+            window.game.handleResponsiveUpdate(this.isInLandscapeMode);
+        }
     }
     
     checkOrientation() {
@@ -142,6 +151,11 @@ class ResponsiveManager {
         
         // Armazenar o estado da orientação para uso em outras funções
         this.isLandscapeMode = isLandscapeMode;
+        
+        // Notificar o jogo sobre a mudança de orientação (se existir)
+        if (window.game) {
+            window.game.handleResponsiveUpdate(this.isLandscapeMode);
+        }
         
         // Mostrar mensagem se estiver em retrato em dispositivo móvel
         if (isMobileDevice && isPortrait) {

@@ -242,8 +242,21 @@ class Game {
         // A captura de tecla para lançar o feitiço é gerenciada pelo UIManager
     }
     
+    // Método para lidar com mudanças na orientação ou responsividade
+    handleResponsiveUpdate(isLandscapeMode) {
+        // Atualiza a informação sobre o modo atual no objeto do jogo
+        this.isLandscapeMode = isLandscapeMode;
+        
+        // Informa a UI sobre a mudança de orientação
+        if (this.ui) {
+            this.ui.updateOrientation(isLandscapeMode);
+        }
+    }
+    
     drawGame() {
         this.ctx.clearRect(0, 0, CONFIG.BASE_WIDTH, CONFIG.BASE_HEIGHT);
+        
+        this.ctx.save(); // Salva o estado atual do contexto
         
         // Desenhar fundo
         this.background.draw(this.ctx, this.scenario);
@@ -263,7 +276,9 @@ class Game {
         // Desenhar jogador
         this.player.draw(this.ctx, this.frame);
         
-        // Desenhar UI
+        this.ctx.restore(); // Restaura o estado antes de desenhar a UI
+        
+        // Desenhar UI - sempre por último para garantir que apareça sobre tudo
         this.ui.drawScore(this.ctx, this.score);
         this.ui.drawLives(this.ctx, this.lives);
         this.ui.drawNotification(this.ctx);

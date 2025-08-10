@@ -840,21 +840,45 @@ class UIManager {
         ctx.fillText(score, CONFIG.BASE_WIDTH / 2, 75);
     }
     
+    // Método para atualizar configurações da UI com base na orientação
+    updateOrientation(isLandscapeMode) {
+        this.isLandscapeMode = isLandscapeMode;
+    }
+    
     drawLives(ctx, lives) {
-        const padding = 15;
+        // Configurações base para os corações
         const heartPixelSize = 5;
         const heartSpacing = 35;
-
+        
+        // Ajustar posição dos corações com base na orientação
+        let padding = 15;
+        let heartScale = 1;
+        
+        // Se estiver em modo paisagem em dispositivo móvel, ajustar posicionamento e escala
+        if (this.isLandscapeMode) {
+            padding = 20; // Aumentar o padding para afastar da borda em modo paisagem
+            heartScale = 1.5; // Aumentar o tamanho dos corações para melhor visibilidade
+        }
+        
+        ctx.save(); // Salvar o estado atual do contexto
+        
         for (let i = 0; i < lives; i++) {
-            const startX = padding + i * heartSpacing;
+            const startX = padding + i * (heartSpacing * heartScale);
             const startY = padding;
             
-            ctx.fillStyle = '#ef4444';
-            ctx.fillRect(startX + heartPixelSize, startY, heartPixelSize, heartPixelSize);
-            ctx.fillRect(startX + heartPixelSize * 3, startY, heartPixelSize, heartPixelSize);
-            ctx.fillRect(startX, startY + heartPixelSize, heartPixelSize * 5, heartPixelSize);
-            ctx.fillRect(startX + heartPixelSize, startY + heartPixelSize * 2, heartPixelSize * 3, heartPixelSize);
-            ctx.fillRect(startX + heartPixelSize * 2, startY + heartPixelSize * 3, heartPixelSize, heartPixelSize);
+            ctx.fillStyle = '#ef4444'; // Vermelho para os corações
+            
+            // Aplicar escala para aumentar o tamanho dos corações em modo paisagem
+            const ps = heartPixelSize * heartScale; // Tamanho de pixel escalado
+            
+            // Desenhar um coração pixel por pixel com o tamanho escalado
+            ctx.fillRect(startX + ps, startY, ps, ps);
+            ctx.fillRect(startX + ps * 3, startY, ps, ps);
+            ctx.fillRect(startX, startY + ps, ps * 5, ps);
+            ctx.fillRect(startX + ps, startY + ps * 2, ps * 3, ps);
+            ctx.fillRect(startX + ps * 2, startY + ps * 3, ps, ps);
         }
+        
+        ctx.restore(); // Restaurar o estado anterior do contexto
     }
 }
