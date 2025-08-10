@@ -224,9 +224,16 @@ canvas {
     }
     
     #game-container {
-        max-width: 100vh; /* Altura da viewport em modo paisagem */
-        max-height: 98vh; /* Quase toda a altura disponível */
-        width: auto; /* Deixa a largura ser calculada pelo aspect ratio */
+        max-width: 100vw; /* Largura total da viewport em modo paisagem */
+        max-height: 100vh; /* Altura total disponível */
+        width: 100vw; /* Usa toda a largura da tela */
+        height: 100vh; /* Usa toda a altura da tela */
+    }
+    
+    canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Garante que o canvas cubra toda a área */
     }
     
     #title {
@@ -301,4 +308,47 @@ canvas {
     background-color: #090a0f;
     width: 100%;
     height: 100%;
+}
+
+/* Estilo específico para container em tela cheia */
+:fullscreen #game-container {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+}
+
+:-webkit-full-screen #game-container {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+}
+
+:-moz-full-screen #game-container {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+}
+
+/* Estilo específico para dispositivos móveis em tela cheia e modo paisagem */
+@media screen and (orientation: landscape) {
+    :fullscreen #game-container,
+    :-webkit-full-screen #game-container,
+    :-moz-full-screen #game-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+    }
+    
+    /* Garantir que o canvas preencha o container em tela cheia */
+    :fullscreen canvas,
+    :-webkit-full-screen canvas,
+    :-moz-full-screen canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+    }
 }
