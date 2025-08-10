@@ -287,7 +287,20 @@ class Game {
     generateObstacles() {
         if (this.frame % CONFIG.obstacleProps.frequency === 0) {
             const type = Math.random() < 0.65 ? 'static' : 'moving';
-            const gapY = Math.random() * (CONFIG.BASE_HEIGHT - CONFIG.obstacleProps.gap - CONFIG.groundHeight - 200) + 100;
+            
+            // Ajustar a altura do obstáculo com base na orientação
+            let minHeight = 100;
+            let maxHeight = CONFIG.BASE_HEIGHT - CONFIG.obstacleProps.gap - CONFIG.groundHeight - 200;
+            
+            // Se estiver em modo paisagem (informado pelo responsiveManager), ajustar as posições
+            if (window.responsiveManager && window.responsiveManager.isInLandscapeMode) {
+                // Em modo paisagem, garantir que os obstáculos não fiquem muito próximos ao topo
+                minHeight = 120; // Aumentar a altura mínima do obstáculo
+                maxHeight = CONFIG.BASE_HEIGHT - CONFIG.obstacleProps.gap - CONFIG.groundHeight - 150;
+            }
+            
+            // Gerar uma posição aleatória dentro dos limites ajustados
+            const gapY = Math.random() * (maxHeight - minHeight) + minHeight;
             
             this.obstacles.push(new Obstacle(
                 CONFIG.BASE_WIDTH,

@@ -152,6 +152,13 @@ class ResponsiveManager {
         // Armazenar o estado da orientação para uso em outras funções
         this.isLandscapeMode = isLandscapeMode;
         
+        // Adicionar ou remover a classe 'landscape-mode' no wrapper do jogo
+        if (isLandscapeMode) {
+            this.gameWrapper.classList.add('landscape-mode');
+        } else {
+            this.gameWrapper.classList.remove('landscape-mode');
+        }
+        
         // Notificar o jogo sobre a mudança de orientação (se existir)
         if (window.game) {
             window.game.handleResponsiveUpdate(this.isLandscapeMode);

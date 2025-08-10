@@ -350,14 +350,29 @@ canvas {
         width: 100% !important;
         height: 100% !important;
         object-fit: contain; /* Mudado para contain para garantir que todo conteúdo seja visível */
+        image-rendering: -moz-crisp-edges !important;
+        image-rendering: -webkit-crisp-edges !important;
+        image-rendering: pixelated !important;
+        image-rendering: crisp-edges !important;
     }
     
     /* Ajustes para elementos de UI em modo paisagem */
     #pauseButton, #fullscreenButton {
-        width: 50px !important;
-        height: 50px !important;
-        line-height: 46px !important;
-        font-size: 24px !important;
+        width: 60px !important;
+        height: 60px !important;
+        line-height: 56px !important;
+        font-size: 28px !important;
         z-index: 1000 !important; /* Garantir que os botões estejam sempre visíveis */
+        opacity: 0.9 !important;
+        background-color: rgba(0, 0, 0, 0.6) !important; /* Fundo mais escuro para destacar */
+        border: 3px solid #F6E05E !important; /* Borda mais grossa */
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important; /* Adicionar brilho */
+    }
+    
+    /* Ajuste específico para modo paisagem para garantir visibilidade da UI */
+    #game-wrapper.landscape-mode .ui-element {
+        border: 2px solid #F6E05E !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
     }
 }

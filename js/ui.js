@@ -853,23 +853,49 @@ class UIManager {
         // Ajustar posição dos corações com base na orientação
         let padding = 15;
         let heartScale = 1;
+        let startYOffset = 0;
         
         // Se estiver em modo paisagem em dispositivo móvel, ajustar posicionamento e escala
         if (this.isLandscapeMode) {
             padding = 20; // Aumentar o padding para afastar da borda em modo paisagem
-            heartScale = 1.5; // Aumentar o tamanho dos corações para melhor visibilidade
+            heartScale = 2.5; // Aumentar significativamente o tamanho dos corações para melhor visibilidade
+            startYOffset = 15; // Deslocar mais para baixo em modo paisagem
         }
         
         ctx.save(); // Salvar o estado atual do contexto
         
+        // Adicionar um fundo semi-transparente para os corações
+        if (this.isLandscapeMode) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(
+                padding - 10, 
+                padding + startYOffset - 10, 
+                lives * (heartSpacing * heartScale) + 20, 
+                heartPixelSize * heartScale * 5 + 20
+            );
+        }
+        
         for (let i = 0; i < lives; i++) {
             const startX = padding + i * (heartSpacing * heartScale);
-            const startY = padding;
+            const startY = padding + startYOffset;
             
-            ctx.fillStyle = '#ef4444'; // Vermelho para os corações
+            ctx.fillStyle = '#ff0000'; // Vermelho mais brilhante para os corações
             
             // Aplicar escala para aumentar o tamanho dos corações em modo paisagem
             const ps = heartPixelSize * heartScale; // Tamanho de pixel escalado
+            
+            // Adicionar um contorno (borda) ao coração para destacar
+            if (this.isLandscapeMode) {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                
+                // Desenhar o contorno de cada pixel do coração
+                ctx.strokeRect(startX + ps, startY, ps, ps);
+                ctx.strokeRect(startX + ps * 3, startY, ps, ps);
+                ctx.strokeRect(startX, startY + ps, ps * 5, ps);
+                ctx.strokeRect(startX + ps, startY + ps * 2, ps * 3, ps);
+                ctx.strokeRect(startX + ps * 2, startY + ps * 3, ps, ps);
+            }
             
             // Desenhar um coração pixel por pixel com o tamanho escalado
             ctx.fillRect(startX + ps, startY, ps, ps);

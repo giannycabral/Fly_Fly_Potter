@@ -132,6 +132,26 @@ class Obstacle {
         const topPillarHeight = this.gapY;
         const bottomPillarY = this.gapY + this.gap;
         
+        // Verificar se estamos em modo paisagem para adicionar destaque aos obstáculos
+        const isLandscape = window.responsiveManager && window.responsiveManager.isInLandscapeMode;
+        
+        // Adicionar contorno destacado em modo paisagem para melhorar a visibilidade
+        if (isLandscape) {
+            // Desenhar um contorno luminoso ao redor dos obstáculos para destacá-los
+            ctx.save();
+            
+            // Contorno do obstáculo superior
+            ctx.strokeStyle = this.type === 'moving' ? 'rgba(255, 255, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(this.x - 2, 0, this.width + 4, topPillarHeight);
+            
+            // Contorno do obstáculo inferior
+            ctx.strokeRect(this.x - 2, bottomPillarY, this.width + 4, CONFIG.BASE_HEIGHT - bottomPillarY);
+            
+            ctx.restore();
+        }
+        
+        // Desenhar o obstáculo conforme o cenário
         if (scenario === 'castle') {
             this.drawCastleTower(ctx, topPillarHeight, bottomPillarY);
         } else if (scenario === 'forest') {
