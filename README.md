@@ -198,7 +198,7 @@ A Licença MIT permite:
   
   ### 🧙‍♂️ Divirta-se e que a magia esteja com você! 🧹✨
 
-[![Jogar Agora](https://img.shields.io/badge/JOGAR%20AGORA-Embarque%20na%20Aventura!-success?style=for-the-badge)](http://localhost:8080)
+[![Jogar Agora](https://img.shields.io/badge/JOGAR%20AGORA-Embarque%20na%20Aventura!-success?style=for-the-badge)](https://giannycabral.github.io/Fly_Fly_Potter/)
 
 </div>
 
