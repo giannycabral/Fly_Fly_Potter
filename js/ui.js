@@ -959,6 +959,11 @@ class UIManager {
         
         // Verificar se estamos em modo paisagem para melhorar a visualização da pontuação
         const isLandscape = this.isLandscapeMode;
+        // Ajustar deslocamento vertical se houver letterbox
+        let offsetY = 0;
+        if (isLandscape && window.responsiveManager && window.responsiveManager.viewportOffsets) {
+            offsetY = window.responsiveManager.viewportOffsets.y / window.responsiveManager.scaleRatio;
+        }
         
         // Em modo paisagem, adicionar fundo e efeitos para melhor visibilidade
         if (isLandscape) {
@@ -1004,7 +1009,7 @@ class UIManager {
         }
         
         ctx.textAlign = "center";
-        ctx.fillText(score, CONFIG.BASE_WIDTH / 2, 75);
+    ctx.fillText(score, CONFIG.BASE_WIDTH / 2, 75 + offsetY);
         
         ctx.restore();
     }
@@ -1071,11 +1076,16 @@ class UIManager {
         let heartScale = 1;
         let startYOffset = 0;
         
+        // Considerar offsets de letterbox fornecidos pelo responsiveManager
+        let offsetY = 0;
+        if (window.responsiveManager && window.responsiveManager.viewportOffsets) {
+            offsetY = window.responsiveManager.viewportOffsets.y / window.responsiveManager.scaleRatio; // converter para coordenada lógica
+        }
         // Se estiver em modo paisagem em dispositivo móvel, ajustar posicionamento para garantir visibilidade
         if (this.isLandscapeMode) {
             padding = 20; // Aumentar padding para melhor visibilidade
             heartScale = 1.2; // Aumentar ligeiramente o tamanho dos corações
-            startYOffset = 25; // Aumentar deslocamento para baixo para evitar que fique no topo extremo
+            startYOffset = 15 + offsetY; // Deslocar de acordo com letterbox superior
         }
         
         ctx.save(); // Salvar o estado atual do contexto

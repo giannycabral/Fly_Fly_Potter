@@ -86,49 +86,56 @@ class ResponsiveManager {
                 this.gameContainer.style.width = '100vw';
                 this.gameContainer.style.height = '100vh';
                 
-                // Calcular a escala para preencher toda a tela, mantendo a proporção
-                const scaleToFillX = screenWidth / this.originalWidth;
-                const scaleToFillY = screenHeight / this.originalHeight;
-                
-                // Usar a escala máxima possível para preencher toda a tela
-                this.scaleRatio = Math.max(scaleToFillX, scaleToFillY);
-                
-                // Se a escala resultar em recorte do conteúdo, use a escala que mantém tudo visível
-                if (this.originalWidth * this.scaleRatio > screenWidth || 
-                    this.originalHeight * this.scaleRatio > screenHeight) {
-                    this.scaleRatio = Math.min(scaleToFillX, scaleToFillY);
-                }
-                
-                // Posicionar o container para ocupar a tela inteira sem transformação
+                // Calcular a escala para CONTER todo o conteúdo (sem cortar topo ou cabeçalho das vidas)
+                const scaleContainX = screenWidth / this.originalWidth;
+                const scaleContainY = screenHeight / this.originalHeight;
+                this.scaleRatio = Math.min(scaleContainX, scaleContainY); // contain
+
+                // Dimensões CSS reais do canvas escalado
+                const cssCanvasWidth = this.originalWidth * this.scaleRatio;
+                const cssCanvasHeight = this.originalHeight * this.scaleRatio;
+
+                // Posicionar o container ocupando toda a tela (servirá como área de letterbox)
                 this.gameContainer.style.position = 'fixed';
                 this.gameContainer.style.top = '0';
                 this.gameContainer.style.left = '0';
                 this.gameContainer.style.right = '0';
                 this.gameContainer.style.bottom = '0';
                 this.gameContainer.style.transform = 'none';
+                this.gameContainer.style.display = 'flex';
+                this.gameContainer.style.alignItems = 'center';
+                this.gameContainer.style.justifyContent = 'center';
+                this.gameContainer.style.backgroundColor = '#090a0f'; // barras laterais/superior
                 
-                // Remover margens e padding para maximizar o espaço
+                // Remover margens e padding
                 this.gameContainer.style.margin = '0';
                 this.gameContainer.style.padding = '0';
                 
-                // Garantir que o canvas ocupe o espaço total do container
-                this.canvas.style.width = '100%';
-                this.canvas.style.height = '100%';
-                this.canvas.style.objectFit = 'cover'; // Usar cover para ocupar todo o espaço
-                
-                // Certificar-se de que a camada UI também ocupe todo o espaço
+                // Aplicar tamanho contendo ao canvas (sem object-fit para não cortar)
+                this.canvas.style.width = cssCanvasWidth + 'px';
+                this.canvas.style.height = cssCanvasHeight + 'px';
+                this.canvas.style.objectFit = 'contain';
+                this.canvas.style.position = 'relative';
+                this.canvas.style.top = '0';
+                this.canvas.style.left = '0';
+
+                // Calcular offsets (letterbox) para uso pela UI se necessário
+                const offsetX = (screenWidth - cssCanvasWidth) / 2;
+                const offsetY = (screenHeight - cssCanvasHeight) / 2;
+                this.viewportOffsets = { x: offsetX, y: offsetY, cssWidth: cssCanvasWidth, cssHeight: cssCanvasHeight };
+
+                // Ajustar ui-layer para ser overlay, mas limitar largura/altura ao canvas visível
                 const uiLayer = document.getElementById('ui-layer');
                 if (uiLayer) {
-                    uiLayer.style.width = '100vw';
-                    uiLayer.style.height = '100vh';
-                    uiLayer.style.top = '0';
-                    uiLayer.style.left = '0';
-                    uiLayer.style.right = '0';
-                    uiLayer.style.bottom = '0';
                     uiLayer.style.position = 'fixed';
+                    uiLayer.style.top = offsetY + 'px';
+                    uiLayer.style.left = offsetX + 'px';
+                    uiLayer.style.width = cssCanvasWidth + 'px';
+                    uiLayer.style.height = cssCanvasHeight + 'px';
+                    uiLayer.style.pointerEvents = 'none';
                 }
-                
-                console.log(`Canvas otimizado para modo paisagem: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
+
+                console.log(`Canvas (contain) paisagem: ${this.canvas.width}x${this.canvas.height} -> CSS ${cssCanvasWidth}x${cssCanvasHeight} escala=${this.scaleRatio.toFixed(3)} offsets=(${offsetX.toFixed(1)},${offsetY.toFixed(1)})`);
             } else {
                 // *** MODO RETRATO (MOSTRAR AVISO PARA ROTACIONAR) ***
                 

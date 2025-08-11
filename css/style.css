@@ -336,7 +336,8 @@ canvas {
     canvas {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Alterado para cover para preencher toda a tela */
+        object-fit: contain; /* Evita cortar topo (vidas) e score */
+        background-color: #090a0f; /* barras letterbox discretas */
         image-rendering: pixelated; /* Manter pixels nítidos */
     }
     
@@ -578,7 +579,8 @@ canvas {
     .fullscreen-mode canvas {
         width: 100% !important;
         height: 100% !important;
-        object-fit: cover !important; /* Alterado para cover para preencher toda a tela */
+        object-fit: contain !important; /* Não cortar conteúdo em fullscreen */
+        background-color: #090a0f !important;
         image-rendering: -moz-crisp-edges !important;
         image-rendering: -webkit-crisp-edges !important;
         image-rendering: pixelated !important;
