@@ -198,7 +198,7 @@ js/
 
 ## 🧪 Executar Localmente
 
-Como é um projeto front-end puro com ES Modules, abra via servidor estático (não use file://).
+Como é um projeto front-end puro com ES Modules, abra via servidor estático (não use file://). 
 
 ### Opção Rápida (Python 3)
 ```
