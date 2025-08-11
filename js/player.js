@@ -130,20 +130,30 @@ class Player {
         return false; // Jogador não bateu no chão
     }
     
+    // Adicionamos propriedades para limitar a frequência de uso do flap
+    lastFlapTime = 0;
+    flapCooldown = 100; // Tempo mínimo entre flaps em milissegundos
+    
     flap() {
-        let currentLift = CONFIG.brooms[this.selectedBroomKey].lift;
-        if (this.visualEffect === 'invert') {
-            // Reduzir o efeito de inversão para que não seja totalmente invertido
-            // Em vez de inverter completamente, apenas aplicamos uma força menor para cima
-            currentLift = currentLift * 0.3; // 30% da força normal
+        const currentTime = Date.now();
+        // Verifica se passou tempo suficiente desde o último flap
+        if (currentTime - this.lastFlapTime >= this.flapCooldown) {
+            this.lastFlapTime = currentTime;
             
-            // Adicionar uma força contrária limitada para que o jogador ainda possa ter algum controle
-            if (this.velocity > 5) {
-                this.velocity *= 0.7; // Reduz velocidade de queda se estiver caindo muito rápido
+            let currentLift = CONFIG.brooms[this.selectedBroomKey].lift;
+            if (this.visualEffect === 'invert') {
+                // Reduzir o efeito de inversão para que não seja totalmente invertido
+                // Em vez de inverter completamente, apenas aplicamos uma força menor para cima
+                currentLift = currentLift * 0.3; // 30% da força normal
+                
+                // Adicionar uma força contrária limitada para que o jogador ainda possa ter algum controle
+                if (this.velocity > 5) {
+                    this.velocity *= 0.7; // Reduz velocidade de queda se estiver caindo muito rápido
+                }
             }
+            this.velocity = currentLift;
+            audioManager.playSfx(audioManager.sfx.flap, "C5", "8n");
         }
-        this.velocity = currentLift;
-        audioManager.playSfx(audioManager.sfx.flap, "C5", "8n", Tone.now());
     }
     
     setInvincible(duration) {

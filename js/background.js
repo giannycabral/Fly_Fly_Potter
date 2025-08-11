@@ -132,40 +132,46 @@ class Obstacle {
         const topPillarHeight = this.gapY;
         const bottomPillarY = this.gapY + this.gap;
         
-        // Verificar se estamos em modo paisagem para adicionar destaque aos obstáculos
+        // Verificar se estamos em modo paisagem para melhorar a visualização dos obstáculos
         const isLandscape = window.responsiveManager && window.responsiveManager.isInLandscapeMode;
-        
-        // Adicionar contorno destacado em modo paisagem para melhorar a visibilidade
-        if (isLandscape) {
-            // Desenhar um contorno luminoso ao redor dos obstáculos para destacá-los
-            ctx.save();
-            
-            // Contorno do obstáculo superior
-            ctx.strokeStyle = this.type === 'moving' ? 'rgba(255, 255, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(this.x - 2, 0, this.width + 4, topPillarHeight);
-            
-            // Contorno do obstáculo inferior
-            ctx.strokeRect(this.x - 2, bottomPillarY, this.width + 4, CONFIG.BASE_HEIGHT - bottomPillarY);
-            
-            ctx.restore();
-        }
         
         // Desenhar o obstáculo conforme o cenário
         if (scenario === 'castle') {
-            this.drawCastleTower(ctx, topPillarHeight, bottomPillarY);
+            this.drawCastleTower(ctx, topPillarHeight, bottomPillarY, isLandscape);
         } else if (scenario === 'forest') {
-            this.drawForestTree(ctx, topPillarHeight, bottomPillarY);
+            this.drawForestTree(ctx, topPillarHeight, bottomPillarY, isLandscape);
         } else if (scenario === 'quidditch') {
-            this.drawQuidditchGoal(ctx, topPillarHeight, bottomPillarY);
+            this.drawQuidditchGoal(ctx, topPillarHeight, bottomPillarY, isLandscape);
+        }
+        
+        // Adicionar um sutil indicador de área perigosa em modo paisagem
+        if (isLandscape && this.type === 'moving') {
+            ctx.save();
+            
+            // Marca visual sutil para obstáculos móveis
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
+            ctx.fillRect(this.x, this.gapY - 5, this.width, 3);
+            ctx.fillRect(this.x, bottomPillarY + 2, this.width, 3);
+            
+            ctx.restore();
         }
     }
     
-    drawCastleTower(ctx, topPillarHeight, bottomPillarY) {
-        const mainColor = this.type === 'moving' ? '#581C87' : '#78716C';
-        const highlightColor = this.type === 'moving' ? '#9333EA' : '#A8A29E';
-        const shadowColor = this.type === 'moving' ? '#3B0764' : '#57534E';
-        const windowColor = '#FBBF24';
+    drawCastleTower(ctx, topPillarHeight, bottomPillarY, isLandscape = false) {
+        // Cores ajustadas para melhor visibilidade em modo paisagem
+        const mainColor = this.type === 'moving' ? 
+            (isLandscape ? '#6D28D9' : '#581C87') : // Roxo mais vivo em modo paisagem para móveis
+            (isLandscape ? '#78716C' : '#78716C');  // Cor original para estáticos
+        
+        const highlightColor = this.type === 'moving' ? 
+            (isLandscape ? '#A855F7' : '#9333EA') : // Destaque mais brilhante em modo paisagem
+            (isLandscape ? '#A8A29E' : '#A8A29E');
+            
+        const shadowColor = this.type === 'moving' ? 
+            (isLandscape ? '#4C1D95' : '#3B0764') : // Sombra mais visível em modo paisagem
+            (isLandscape ? '#57534E' : '#57534E');
+            
+        const windowColor = isLandscape ? '#FDE047' : '#FBBF24'; // Janelas mais brilhantes em paisagem
 
         ctx.fillStyle = mainColor;
         ctx.fillRect(this.x, 0, this.width, topPillarHeight);
@@ -208,16 +214,29 @@ class Obstacle {
         }
     }
 
-    drawForestTree(ctx, topPillarHeight, bottomPillarY) {
-        const trunkColor = '#5D4037';
-        const leavesColor = this.type === 'moving' ? '#2E7D32' : '#388E3C';
-        const leavesHighlight = this.type === 'moving' ? '#4CAF50' : '#66BB6A';
+    drawForestTree(ctx, topPillarHeight, bottomPillarY, isLandscape = false) {
+        // Cores ajustadas para melhor visibilidade em modo paisagem para a floresta
+        const trunkColor = this.type === 'moving' ? 
+            (isLandscape ? '#92400E' : '#7C2D12') : // Tronco mais visível em paisagem
+            (isLandscape ? '#A16207' : '#92400E');
+            
+        const trunkHighlightColor = this.type === 'moving' ? 
+            (isLandscape ? '#EA580C' : '#C2410C') : // Destaque mais brilhante
+            (isLandscape ? '#D97706' : '#B45309');
+            
+        const leavesColor = this.type === 'moving' ? 
+            (isLandscape ? '#15803D' : '#166534') : // Folhas mais visíveis
+            (isLandscape ? '#16A34A' : '#14532D');
+            
+        const leavesHighlightColor = this.type === 'moving' ? 
+            (isLandscape ? '#22C55E' : '#15803D') : // Destaque mais brilhante
+            (isLandscape ? '#22C55E' : '#15803D');
         
         ctx.fillStyle = trunkColor;
         ctx.fillRect(this.x, 0, this.width, topPillarHeight);
         ctx.fillStyle = leavesColor;
         ctx.fillRect(this.x - 10, topPillarHeight - 40, this.width + 20, 40);
-        ctx.fillStyle = leavesHighlight;
+        ctx.fillStyle = leavesHighlightColor;
         ctx.fillRect(this.x - 5, topPillarHeight - 35, this.width + 10, 30);
 
         const bottomPillarHeight = CONFIG.BASE_HEIGHT - bottomPillarY;
@@ -225,28 +244,54 @@ class Obstacle {
         ctx.fillRect(this.x, bottomPillarY, this.width, bottomPillarHeight);
         ctx.fillStyle = leavesColor;
         ctx.fillRect(this.x - 10, bottomPillarY, this.width + 20, 40);
-        ctx.fillStyle = leavesHighlight;
+        ctx.fillStyle = leavesHighlightColor;
         ctx.fillRect(this.x - 5, bottomPillarY + 5, this.width + 10, 30);
     }
 
-    drawQuidditchGoal(ctx, topPillarHeight, bottomPillarY) {
-        const postColor = '#A1887F';
-        const hoopColor = '#FFD700';
-
-        ctx.fillStyle = postColor;
-        ctx.fillRect(this.x + this.width/2 - 5, 0, 10, topPillarHeight);
-        ctx.fillStyle = hoopColor;
+    drawQuidditchGoal(ctx, topPillarHeight, bottomPillarY, isLandscape = false) {
+        // Cores ajustadas para melhor visibilidade em modo paisagem para o campo de Quadribol
+        const goalColor = this.type === 'moving' ? 
+            (isLandscape ? '#DC2626' : '#B91C1C') : // Vermelho mais vivo
+            (isLandscape ? '#EAB308' : '#CA8A04');  // Dourado mais brilhante
+            
+        const poleColor = this.type === 'moving' ? 
+            (isLandscape ? '#B91C1C' : '#991B1B') : // Pole mais visível
+            (isLandscape ? '#D97706' : '#B45309');
+            
+        const ringColor = this.type === 'moving' ? 
+            (isLandscape ? '#FCA5A5' : '#F87171') : // Anel mais claro para móveis
+            (isLandscape ? '#FDE047' : '#FBBF24'); // Anel mais brilhante para estáticos
+            
+        // Desenhar o gol de Quadribol
+        // (aqui vai o código original da função)
+        ctx.fillStyle = poleColor;
+        ctx.fillRect(this.x + this.width / 3, 0, this.width / 3, topPillarHeight);
+        ctx.fillRect(this.x + this.width / 3, bottomPillarY, this.width / 3, CONFIG.BASE_HEIGHT - bottomPillarY);
+        
+        // Desenhar o círculo do gol no topo
+        ctx.fillStyle = goalColor;
+        const ringRadius = this.width * 0.8;
         ctx.beginPath();
-        ctx.arc(this.x + this.width/2, topPillarHeight, 30, 0, Math.PI * 2);
-        ctx.lineWidth = 8;
-        ctx.strokeStyle = hoopColor;
-        ctx.stroke();
-
-        ctx.fillStyle = postColor;
-        ctx.fillRect(this.x + this.width/2 - 5, bottomPillarY, 10, CONFIG.BASE_HEIGHT - bottomPillarY);
+        ctx.arc(this.x + this.width / 2, topPillarHeight - ringRadius / 2, ringRadius / 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Desenhar o círculo interno do gol
+        ctx.fillStyle = ringColor;
         ctx.beginPath();
-        ctx.arc(this.x + this.width/2, bottomPillarY, 30, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.arc(this.x + this.width / 2, topPillarHeight - ringRadius / 2, ringRadius / 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Desenhar o círculo do gol na parte inferior
+        ctx.fillStyle = goalColor;
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, bottomPillarY + ringRadius / 2, ringRadius / 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Desenhar o círculo interno do gol inferior
+        ctx.fillStyle = ringColor;
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, bottomPillarY + ringRadius / 2, ringRadius / 4, 0, Math.PI * 2);
+        ctx.fill();
     }
     
     checkCollision(player) {

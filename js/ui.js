@@ -167,18 +167,41 @@ class UIManager {
         // Configurar os botões da tela Game Over
         this.setupGameOverButtons();
         
-        // Configurar eventos globais de input
-        window.addEventListener('mousedown', () => game.handleInput());
+        // Variáveis para rastrear o estado dos inputs
+        let isInputActive = false;
+        let inputCooldown = false;
+        
+        // Configurar eventos globais de input com debounce para evitar chamadas rápidas demais
+        const handleGameInput = () => {
+            if (!inputCooldown && game.gameState === 'playing') {
+                game.handleInput();
+                
+                // Configura um cooldown para evitar múltiplas chamadas rápidas
+                inputCooldown = true;
+                setTimeout(() => {
+                    inputCooldown = false;
+                }, 100); // 100ms de cooldown
+            }
+        };
+        
+        window.addEventListener('mousedown', () => handleGameInput());
         window.addEventListener('touchstart', (e) => { 
             e.preventDefault(); 
-            game.handleInput(); 
+            handleGameInput(); 
         });
         window.addEventListener('keydown', (e) => { 
-            if (e.code === 'Space' && game.gameState === 'playing') { 
-                game.handleInput(); 
+            if (e.code === 'Space' && !isInputActive) { 
+                isInputActive = true;
+                handleGameInput();
             }
             if (e.code === 'Escape' || e.code === 'KeyP') { 
                 game.togglePause(); 
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                isInputActive = false;
             }
         });
         
@@ -198,12 +221,18 @@ class UIManager {
     }
     
     setupCharacterSelection(onCharacterSelected) {
+        // Armazenar o callback para uso posterior
+        this._lastCharacterSelectionCallback = onCharacterSelected;
+        
         this.characterSelectionContainer.innerHTML = '';
         Object.keys(CONFIG.characters).forEach(key => {
             const char = CONFIG.characters[key];
             const container = document.createElement('div');
             container.className = 'selection-container text-center';
             container.dataset.char = key;
+            
+            // Adicionar um tooltip para dispositivos que suportam hover
+            container.title = char.name;
 
             const portraitCanvas = document.createElement('canvas');
             portraitCanvas.width = 56;
@@ -214,8 +243,20 @@ class UIManager {
             this.drawCharacterPreview(charCtx, key);
             
             const nameP = document.createElement('p');
-            nameP.className = 'text-xs mt-1';
-            nameP.textContent = char.name.split(' ')[0];
+            nameP.className = 'text-xs mt-1 char-name';
+            
+            // Verificar se estamos em modo paisagem para ajustar o nome exibido
+            const isLandscape = window.responsiveManager && window.responsiveManager.isInLandscapeMode;
+            
+            if (isLandscape) {
+                nameP.classList.add('landscape');
+                // Em paisagem, mostrar o nome completo do personagem
+                nameP.textContent = char.name;
+            } else {
+                // Em retrato, mostrar apenas o primeiro nome
+                const firstName = char.name.split(' ')[0];
+                nameP.textContent = firstName;
+            }
 
             container.appendChild(portraitCanvas);
             container.appendChild(nameP);
@@ -224,6 +265,9 @@ class UIManager {
                 onCharacterSelected(key);
                 document.querySelectorAll('#characterSelection .selection-container').forEach(el => el.classList.remove('selected'));
                 container.classList.add('selected');
+                
+                // Mostrar uma notificação de seleção
+                this.showFloatingMessage(`${char.name} selecionado!`, 'success');
             });
 
             this.characterSelectionContainer.appendChild(container);
@@ -232,12 +276,18 @@ class UIManager {
     }
     
     setupBroomSelection(onBroomSelected) {
+        // Armazenar o callback para uso posterior
+        this._lastBroomSelectionCallback = onBroomSelected;
+        
         this.broomSelectionContainer.innerHTML = '';
         Object.keys(CONFIG.brooms).forEach(key => {
             const broom = CONFIG.brooms[key];
             const container = document.createElement('div');
             container.className = 'selection-container text-center';
             container.dataset.broom = key;
+            
+            // Adicionar um tooltip para dispositivos que suportam hover
+            container.title = `${broom.name}: ${broom.description}`;
 
             const portraitCanvas = document.createElement('canvas');
             portraitCanvas.width = 64;
@@ -248,8 +298,24 @@ class UIManager {
             this.drawBroomPreview(broomCtx, key);
 
             const nameP = document.createElement('p');
-            nameP.className = 'text-xs mt-1';
-            nameP.textContent = broom.name;
+            nameP.className = 'text-xs mt-1 broom-name';
+            
+            // Verificar se estamos em modo paisagem para ajustar o formato do nome
+            const isLandscape = window.responsiveManager && window.responsiveManager.isInLandscapeMode;
+            
+            if (isLandscape) {
+                nameP.classList.add('landscape');
+                // Em paisagem, mostrar o nome completo sem quebras
+                nameP.textContent = broom.name;
+            } else {
+                // Em retrato, separar o nome para torná-lo mais legível em vassouras com nomes compostos
+                const broomName = broom.name.includes(' ') ? 
+                    broom.name.split(' ')[0] + '\n' + broom.name.split(' ').slice(1).join(' ') : 
+                    broom.name;
+                nameP.textContent = broomName;
+                // Usar white-space pre para respeitar as quebras de linha
+                nameP.style.whiteSpace = 'pre';
+            }
 
             container.appendChild(portraitCanvas);
             container.appendChild(nameP);
@@ -258,6 +324,9 @@ class UIManager {
                 onBroomSelected(key);
                 document.querySelectorAll('#broomSelection .selection-container').forEach(el => el.classList.remove('selected'));
                 container.classList.add('selected');
+                
+                // Mostrar uma notificação de seleção
+                this.showFloatingMessage(`${broom.name} selecionada!`, 'success');
             });
 
             this.broomSelectionContainer.appendChild(container);
@@ -801,6 +870,44 @@ class UIManager {
         this.notification.alpha = 1.0;
     }
     
+    // Método para exibir mensagens flutuantes na interface
+    showFloatingMessage(message, type = 'info') {
+        // Criar um elemento para a mensagem flutuante
+        const floatingMsg = document.createElement('div');
+        floatingMsg.textContent = message;
+        floatingMsg.className = 'floating-message';
+        
+        // Adicionar estilo baseado no tipo de mensagem
+        if (type === 'success') {
+            floatingMsg.classList.add('success');
+        } else if (type === 'warning') {
+            floatingMsg.classList.add('warning');
+        } else if (type === 'error') {
+            floatingMsg.classList.add('error');
+        }
+        
+        // Adicionar ao DOM
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.appendChild(floatingMsg);
+            
+            // Animar a entrada da mensagem
+            setTimeout(() => {
+                floatingMsg.classList.add('show');
+            }, 10);
+            
+            // Remover após 2 segundos
+            setTimeout(() => {
+                floatingMsg.classList.remove('show');
+                setTimeout(() => {
+                    if (floatingMsg.parentNode) {
+                        floatingMsg.parentNode.removeChild(floatingMsg);
+                    }
+                }, 500);
+            }, 2000);
+        }
+    }
+    
     drawNotification(ctx) {
         if (this.notification.timer > 0) {
             ctx.save();
@@ -843,6 +950,53 @@ class UIManager {
     // Método para atualizar configurações da UI com base na orientação
     updateOrientation(isLandscapeMode) {
         this.isLandscapeMode = isLandscapeMode;
+        
+        // Reconstruir os containers de seleção para atualizar os nomes conforme a orientação
+        if (this.characterSelectionContainer && this.characterSelectionContainer.children.length > 0) {
+            // Armazenar a seleção atual
+            const currentSelectedChar = document.querySelector('#characterSelection .selected')?.dataset.char;
+            
+            // Reconstruir o container de seleção de personagens
+            if (typeof this._lastCharacterSelectionCallback === 'function') {
+                this.setupCharacterSelection(this._lastCharacterSelectionCallback);
+                
+                // Restaurar a seleção
+                if (currentSelectedChar) {
+                    const selectedContainer = document.querySelector(`#characterSelection [data-char="${currentSelectedChar}"]`);
+                    if (selectedContainer) {
+                        document.querySelectorAll('#characterSelection .selection-container').forEach(el => el.classList.remove('selected'));
+                        selectedContainer.classList.add('selected');
+                    }
+                }
+            }
+        }
+        
+        if (this.broomSelectionContainer && this.broomSelectionContainer.children.length > 0) {
+            // Armazenar a seleção atual
+            const currentSelectedBroom = document.querySelector('#broomSelection .selected')?.dataset.broom;
+            
+            // Reconstruir o container de seleção de vassouras
+            if (typeof this._lastBroomSelectionCallback === 'function') {
+                this.setupBroomSelection(this._lastBroomSelectionCallback);
+                
+                // Restaurar a seleção
+                if (currentSelectedBroom) {
+                    const selectedContainer = document.querySelector(`#broomSelection [data-broom="${currentSelectedBroom}"]`);
+                    if (selectedContainer) {
+                        document.querySelectorAll('#broomSelection .selection-container').forEach(el => el.classList.remove('selected'));
+                        selectedContainer.classList.add('selected');
+                    }
+                }
+            }
+        }
+        
+        // Se estiver em modo paisagem, mostrar uma mensagem de boas-vindas ao modo otimizado
+        if (isLandscapeMode && !this._landscapeModeMessageShown) {
+            setTimeout(() => {
+                this.showFloatingMessage("Modo paisagem ativado - Experiência otimizada!", "success");
+                this._landscapeModeMessageShown = true;
+            }, 1000);
+        }
     }
     
     drawLives(ctx, lives) {
@@ -855,49 +1009,45 @@ class UIManager {
         let heartScale = 1;
         let startYOffset = 0;
         
-        // Se estiver em modo paisagem em dispositivo móvel, ajustar posicionamento e escala
+        // Se estiver em modo paisagem em dispositivo móvel, ajustar posicionamento para garantir visibilidade
         if (this.isLandscapeMode) {
-            padding = 20; // Aumentar o padding para afastar da borda em modo paisagem
-            heartScale = 2.5; // Aumentar significativamente o tamanho dos corações para melhor visibilidade
-            startYOffset = 15; // Deslocar mais para baixo em modo paisagem
+            padding = 20; // Manter um padding adequado
+            heartScale = 1; // Manter o tamanho original dos corações
+            startYOffset = 10; // Leve deslocamento para baixo
         }
         
         ctx.save(); // Salvar o estado atual do contexto
         
-        // Adicionar um fundo semi-transparente para os corações
+        // Adicionar um pequeno fundo semi-transparente para os corações
         if (this.isLandscapeMode) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fillRect(
-                padding - 10, 
-                padding + startYOffset - 10, 
-                lives * (heartSpacing * heartScale) + 20, 
-                heartPixelSize * heartScale * 5 + 20
+                padding - 5, 
+                padding + startYOffset - 5, 
+                lives * heartSpacing + 10, 
+                heartPixelSize * 5 + 10
             );
         }
         
         for (let i = 0; i < lives; i++) {
-            const startX = padding + i * (heartSpacing * heartScale);
+            const startX = padding + i * heartSpacing;
             const startY = padding + startYOffset;
             
-            ctx.fillStyle = '#ff0000'; // Vermelho mais brilhante para os corações
+            ctx.fillStyle = '#ef4444'; // Vermelho original
             
-            // Aplicar escala para aumentar o tamanho dos corações em modo paisagem
-            const ps = heartPixelSize * heartScale; // Tamanho de pixel escalado
+            // Tamanho normal de pixel
+            const ps = heartPixelSize;
             
-            // Adicionar um contorno (borda) ao coração para destacar
+            // Em modo paisagem, adicionar um contorno sutil para melhor visibilidade
             if (this.isLandscapeMode) {
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 0.5;
                 
-                // Desenhar o contorno de cada pixel do coração
-                ctx.strokeRect(startX + ps, startY, ps, ps);
-                ctx.strokeRect(startX + ps * 3, startY, ps, ps);
-                ctx.strokeRect(startX, startY + ps, ps * 5, ps);
-                ctx.strokeRect(startX + ps, startY + ps * 2, ps * 3, ps);
-                ctx.strokeRect(startX + ps * 2, startY + ps * 3, ps, ps);
+                // Desenhar um contorno sutil ao redor do coração
+                ctx.strokeRect(startX - 1, startY - 1, ps * 5 + 2, ps * 4 + 2);
             }
             
-            // Desenhar um coração pixel por pixel com o tamanho escalado
+            // Desenhar um coração pixel por pixel com o tamanho normal
             ctx.fillRect(startX + ps, startY, ps, ps);
             ctx.fillRect(startX + ps * 3, startY, ps, ps);
             ctx.fillRect(startX, startY + ps, ps * 5, ps);

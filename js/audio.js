@@ -64,10 +64,25 @@ class AudioManager {
         };
     }
     
+    // Adicionamos uma propriedade para rastrear o tempo da última reprodução
+    lastPlayedTime = 0;
+    
     playSfx(sound, ...args) {
         if (this.isSoundOn) {
             if (sound.triggerAttackRelease) {
-                sound.triggerAttackRelease(...args);
+                const now = Tone.now();
+                // Verifica se passou tempo suficiente desde a última reprodução
+                if (now > this.lastPlayedTime + 0.05) { // 50ms de intervalo mínimo
+                    this.lastPlayedTime = now;
+                    // Substitui qualquer timestamp fornecido pelo usuário com o tempo atual
+                    const newArgs = [...args];
+                    if (newArgs.length > 2) {
+                        newArgs[2] = now;
+                    } else {
+                        newArgs.push(now);
+                    }
+                    sound.triggerAttackRelease(...newArgs);
+                }
             }
         }
     }
