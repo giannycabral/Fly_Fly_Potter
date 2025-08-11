@@ -36,46 +36,50 @@
 
 ## 📱 Experiência Mobile Otimizada
 
-O jogo foi meticulosamente desenvolvido para oferecer uma experiência mágica em dispositivos móveis:
+O jogo foi cuidadosamente ajustado para oferecer uma experiência consistente e sem cortes em telas pequenas, especialmente em **modo paisagem**.
 
-### 🔄 Suporte a Orientação Inteligente
-- **Detecção automática** de orientação para adaptar a interface
-- **Notificação visual animada** guiando o jogador para o modo paisagem
-- **Transição suave** entre diferentes orientações de tela
+### 🔄 Orientação & Escala
+- **Detecção automática** de orientação (retrato/paisagem)
+- **Sugestão de uso em paisagem** para melhor área jogável
+- Estratégia de escala **contain + letterbox** (sem cortes no topo/baixo): preserva toda a área lógica (800x640) evitando que vidas e pontuação desapareçam
+- Cálculo de **offsets de letterbox** para reposicionar HUD (corações e score sempre visíveis)
 
-### 👆 Controles Tácteis Aprimorados
-- **Interface adaptada** com elementos dimensionados para o toque
-- **Sistema de voo contínuo** com toque prolongado para melhor controle
-- **Gestos intuitivos** como deslizar para baixo para pausar o jogo
-- **Feedback tátil** para uma experiência mais imersiva (em dispositivos compatíveis)
+### 🖥️ Modo Tela Cheia
+- **Botão dedicado** para entrar/sair de fullscreen
+- Tenta aplicar `screen.orientation.lock('landscape')` (quando suportado)
+- Classe CSS específica (`.fullscreen-mode`) para ajustes visuais
 
-### 🖥️ Modo Tela Cheia Imersivo
-- **Botão dedicado** para entrar/sair do modo tela cheia
-- **Transições suaves** para uma experiência visual fluida
-- **Rotação automática** para o modo ideal de visualização
+### � Controles
+- Toque único (ou clique / tecla Espaço) para fazer o personagem subir
+- Sem gestos complexos: foco em resposta rápida e previsível
+- Debounce / cooldown para evitar múltiplas ativações acidentais e erros de áudio
 
-### 📐 Layout Responsivo Inteligente
-- **Sistema de escala adaptativa** que mantém a proporção do jogo em qualquer tela
-- **Interface fluida** que se ajusta automaticamente a diferentes resoluções
-- **Elementos redimensionados** para manter a jogabilidade ideal em todos dispositivos
-- **Disposição otimizada** que aproveita o espaço disponível em cada orientação
+### 🔊 Áudio Estável
+- Uso de **Tone.js** para efeitos
+- **Cooldown anti-spam** evita erro “Start time must be strictly greater than previous start time” em disparos muito rápidos
+- Botão de alternância de som na UI
 
-### ⚡ Performance Otimizada
-- **Renderização eficiente** para conservar bateria em dispositivos móveis
-- **Carregamento em blocos** para inicialização rápida do jogo
-- **Detecção automática** de capacidades do dispositivo para ajustes de desempenho
-- **Animações suaves** mesmo em dispositivos de entrada
+### HUD Aprimorado em Paisagem
+- Fundo translúcido e bordas para score e vidas
+- Corações com brilho, sombra e leve aumento de escala
+- Notificações contextuais (ex: Floresta Proibida) com destaque visual
+
+### ⚡ Performance
+- Canvas único + desenhistas especializados
+- Efeitos visuais condicionais ao cenário
+- Minimiza relayouts reposicionando apenas contêiner externo na mudança de orientação
 
 ## 🎮 Como Jogar
 
 ![Instruções](https://img.shields.io/badge/Dificuldade-Desafiadora!-orange?style=for-the-badge)
 
-1. **Início Mágico:** Escolha seu bruxo favorito e selecione uma vassoura poderosa
-2. **Decolagem:** Toque na tela (ou pressione espaço/seta para cima) para fazer seu personagem voar
-3. **Navegação:** Mantenha toques curtos e precisos para voar entre os obstáculos
-4. **Colecionáveis:** Pegue feijõezinhos para pontos, mas cuidado com os de sabor ruim!
-5. **Confrontos:** Quando Dementadores aparecerem, use o feitiço Expecto Patronum no momento certo
-6. **Sobrevivência:** Colete Sapos de Chocolate para ganhar vidas extras
+1. **Início Mágico:** Escolha personagem e vassoura na tela inicial
+2. **Decolagem:** Toque (mobile) ou pressione Espaço / Clique (desktop)
+3. **Controle de Altura:** Toques ritmados mantêm a trajetória estável
+4. **Colecionáveis:** Feijõezinhos podem ajudar ou atrapalhar (observe cores)
+5. **Dementadores:** Ative o feitiço quando solicitado (botão ou tecla Espaço no estado de feitiço)
+6. **Sobrevivência:** Sapos de Chocolate adicionam vidas; evite colisões sucessivas
+7. **Paisagem Recomendada:** Ative fullscreen para melhor campo de visão
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -127,7 +131,7 @@ O jogo foi meticulosamente desenvolvido para oferecer uma experiência mágica e
 ## 💡 Dicas de Mestre Bruxo
 
 - **Ritmo é tudo!** Mantenha toques curtos e precisos para maior controle da vassoura
-- **Modo Paisagem** garante a melhor experiência visual em dispositivos móveis
+- **Modo Paisagem + Fullscreen** garante a melhor experiência visual em dispositivos móveis
 - **Pomo de Ouro** proporciona invencibilidade temporária e 50 pontos extras
 - **Prepare o feitiço!** Quando um Dementador aparecer, tenha o Expecto Patronum pronto
 - **Padrões de obstáculos** se repetem - observe e memorize para avançar mais longe!
@@ -141,7 +145,7 @@ O jogo foi meticulosamente desenvolvido para oferecer uma experiência mágica e
 
 ---
 
-## �‍💻 Desenvolvimento
+## 👩‍💻 Desenvolvimento
 
 <div align="center">
   <img src="https://img.shields.io/badge/Código%20com-Magia-blueviolet?style=for-the-badge&logo=html5" alt="Código com Magia">
@@ -151,11 +155,74 @@ Este projeto foi desenvolvido com dedicação e paixão, combinando o amor pela 
 
 ### 🌟 Recursos de Código
 
-- **Arquitetura modular** para fácil manutenção e expansão
-- **Design patterns** para gerenciamento eficiente de estados de jogo
-- **Controles responsivos** adaptados para diferentes plataformas
-- **Sistema de entidades** para gerenciar elementos do jogo
-- **Gerenciamento de áudio** para uma experiência sonora envolvente
+- **Arquitetura modular:** arquivos separados por responsabilidade (`game.js`, `player.js`, `background.js`, `entities.js`, `ui.js`, `responsive.js`, `audio.js`)
+- **Canvas lógico fixo (800x640):** simplifica física e colisões; escala visual independente
+- **Gerenciador Responsivo:** converte viewport físico em escala + offsets (letterbox) e expõe `scaleRatio` & `viewportOffsets`
+- **HUD adaptativo:** vidas e score reposicionados conforme offsets sem distorcer coordenadas do jogo
+- **Cooldowns inteligentes:** evitam spam de áudio e entrada excessiva
+- **Sistema de obstáculos contextual:** cenários ajustam gaps e estilos visuais
+
+### 📂 Estrutura (Resumo)
+```
+js/
+  audio.js        # Efeitos e controle de som (Tone.js + cooldown)
+  background.js   # Obstáculos e cenários
+  config.js       # Constantes globais
+  entities.js     # Entidades auxiliares
+  game.js         # Loop principal / estados
+  player.js       # Lógica de movimento e ações do jogador
+  responsive.js   # Escala, orientação, fullscreen, offsets
+  ui.js           # HUD, menus, seleção e notificações
+```
+
+### 🔄 Ciclo de Renderização
+1. Atualiza estado do jogo (física, colisões, timers)
+2. Desenha cenário / obstáculos
+3. Desenha jogador / entidades
+4. Desenha HUD (score, vidas, notificações) aplicando offsets
+
+### 🧪 Qualidade
+- Sem dependências de build: roda direto em servidor estático
+- Uso mínimo de alocação dentro do loop para reduzir GC
+- Logs estratégicos para depuração de responsividade e áudio
+
+### 🆕 Mudanças Recentes (Changelog Resumido)
+| Data | Mudança |
+|------|---------|
+| 2025-08 | Migração de escala cover → contain + letterbox (corrige sumiço de vidas/score) |
+| 2025-08 | Adicionado cálculo de `viewportOffsets` e ajuste do HUD |
+| 2025-08 | Botão fullscreen + tentativa de orientation lock |
+| 2025-08 | Cooldown de áudio (corrige erro Tone.js start time) |
+| 2025-08 | Melhorias visuais em corações e score em paisagem |
+| 2025-08 | Refinamento de seleção de personagem/vassoura em paisagem |
+
+## 🧪 Executar Localmente
+
+Como é um projeto front-end puro com ES Modules, abra via servidor estático (não use file://).
+
+### Opção Rápida (Python 3)
+```
+python3 -m http.server 8080
+```
+Acesse: http://localhost:8080
+
+### Node (http-server)
+```
+npm i -g http-server
+http-server -p 8080
+```
+
+### Live Server (VS Code)
+Instale a extensão e clique em "Open with Live Server" no `index.html`.
+
+## 🤝 Contribuição
+
+Sinta-se à vontade para abrir issues ou PRs:
+1. Fork / branch descritiva
+2. Alterações focadas e pequenas
+3. Descrever claramente o problema/solução
+
+Ideias bem-vindas: novos cenários, power-ups, acessibilidade, efeitos sonoros temáticos.
 
 ### 🚀 Futuras Atualizações
 
@@ -205,5 +272,5 @@ A Licença MIT permite:
 ---
 
 <div align="center">
-  <sub>Fly Fly Potter © 2025 | Versão 1.0.0</sub>
+  <sub>Fly Fly Potter © 2025 | Versão 1.1.0</sub>
 </div>
