@@ -102,7 +102,7 @@ class Ground {
 
 // Classe para obstáculos
 class Obstacle {
-    constructor(x, width, gapY, gap, type) {
+    constructor(x, width, gapY, gap, type, isLandscapeGenerated = false) {
         this.x = x;
         this.width = width;
         this.gapY = gapY;
@@ -113,6 +113,7 @@ class Obstacle {
         this.moveDirection = 1;
         this.initialGapY = gapY;
         this.moveRange = 45;
+        this.isLandscapeGenerated = isLandscapeGenerated; // Flag para saber se foi gerado em modo paisagem
     }
     
     update() {
@@ -135,6 +136,46 @@ class Obstacle {
         // Verificar se estamos em modo paisagem para melhorar a visualização dos obstáculos
         const isLandscape = window.responsiveManager && window.responsiveManager.isInLandscapeMode;
         
+        // Criar efeitos de destaque para obstáculos em modo paisagem
+        if (isLandscape) {
+            ctx.save();
+            
+            // Adicionar destaque para a área de passagem segura
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.05)'; // Verde muito sutil
+            ctx.fillRect(this.x - 5, topPillarHeight + 2, this.width + 10, this.gap - 4);
+            
+            // Adicionar linhas de aviso mais visíveis para os limites dos obstáculos
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 2;
+            
+            // Linha superior
+            ctx.beginPath();
+            ctx.moveTo(this.x, topPillarHeight);
+            ctx.lineTo(this.x + this.width, topPillarHeight);
+            ctx.stroke();
+            
+            // Linha inferior
+            ctx.beginPath();
+            ctx.moveTo(this.x, bottomPillarY);
+            ctx.lineTo(this.x + this.width, bottomPillarY);
+            ctx.stroke();
+            
+            // Para obstáculos móveis, adicionar aviso mais visível
+            if (this.type === 'moving') {
+                // Marca visual mais explícita para obstáculos móveis
+                ctx.fillStyle = 'rgba(255, 50, 50, 0.15)'; // Vermelho mais visível
+                ctx.fillRect(this.x, this.gapY - 8, this.width, 5);
+                ctx.fillRect(this.x, bottomPillarY + 3, this.width, 5);
+                
+                // Pequena animação de alerta
+                const pulseAmount = Math.sin(Date.now() * 0.005) * 0.3 + 0.7;
+                ctx.fillStyle = `rgba(255, 50, 50, ${0.1 * pulseAmount})`;
+                ctx.fillRect(this.x - 2, 0, this.width + 4, CONFIG.BASE_HEIGHT);
+            }
+            
+            ctx.restore();
+        }
+        
         // Desenhar o obstáculo conforme o cenário
         if (scenario === 'castle') {
             this.drawCastleTower(ctx, topPillarHeight, bottomPillarY, isLandscape);
@@ -144,14 +185,26 @@ class Obstacle {
             this.drawQuidditchGoal(ctx, topPillarHeight, bottomPillarY, isLandscape);
         }
         
-        // Adicionar um sutil indicador de área perigosa em modo paisagem
-        if (isLandscape && this.type === 'moving') {
+        // Adicionar um indicador de "área de passagem" em modo paisagem
+        if (isLandscape) {
             ctx.save();
             
-            // Marca visual sutil para obstáculos móveis
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
-            ctx.fillRect(this.x, this.gapY - 5, this.width, 3);
-            ctx.fillRect(this.x, bottomPillarY + 2, this.width, 3);
+            // Desenhar setas que indicam o caminho
+            const arrowY = topPillarHeight + (this.gap / 2);
+            const arrowSize = 10;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            // Seta no meio do gap
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width + 5, arrowY);
+            ctx.lineTo(this.x + this.width + 5 + arrowSize, arrowY);
+            ctx.lineTo(this.x + this.width + 5 + arrowSize - 4, arrowY - 4);
+            ctx.moveTo(this.x + this.width + 5 + arrowSize, arrowY);
+            ctx.lineTo(this.x + this.width + 5 + arrowSize - 4, arrowY + 4);
+            ctx.stroke();
             
             ctx.restore();
         }

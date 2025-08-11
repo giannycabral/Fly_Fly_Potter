@@ -294,12 +294,28 @@ class Game {
             
             // Se estiver em modo paisagem (informado pelo responsiveManager), ajustar as posições
             if (window.responsiveManager && window.responsiveManager.isInLandscapeMode) {
-                // Em modo paisagem, garantir que os obstáculos não fiquem muito próximos ao topo
-                minHeight = 120; // Aumentar a altura mínima do obstáculo
-                maxHeight = CONFIG.BASE_HEIGHT - CONFIG.obstacleProps.gap - CONFIG.groundHeight - 150;
+                // Em modo paisagem, garantir que os obstáculos sejam mais visíveis e não fiquem muito próximos ao topo
+                minHeight = 150; // Aumentar significativamente a altura mínima do obstáculo 
+                maxHeight = CONFIG.BASE_HEIGHT - CONFIG.obstacleProps.gap - CONFIG.groundHeight - 120;
+                
+                // Aumentar o gap entre obstáculos em modo paisagem para facilitar a passagem
+                const adjustedGap = CONFIG.obstacleProps.gap * 1.2;
+                
+                // Gerar uma posição aleatória dentro dos limites ajustados para modo paisagem
+                const gapY = Math.random() * (maxHeight - minHeight) + minHeight;
+                
+                this.obstacles.push(new Obstacle(
+                    CONFIG.BASE_WIDTH,
+                    CONFIG.obstacleProps.width,
+                    gapY,
+                    adjustedGap, // Usar o gap aumentado
+                    type,
+                    true // Flag indicando que foi gerado em modo paisagem
+                ));
+                return; // Retornar após criar o obstáculo específico para modo paisagem
             }
             
-            // Gerar uma posição aleatória dentro dos limites ajustados
+            // Gerar uma posição aleatória dentro dos limites padrão (para modo retrato)
             const gapY = Math.random() * (maxHeight - minHeight) + minHeight;
             
             this.obstacles.push(new Obstacle(
@@ -307,7 +323,8 @@ class Game {
                 CONFIG.obstacleProps.width,
                 gapY,
                 CONFIG.obstacleProps.gap,
-                type
+                type,
+                false // Flag indicando que foi gerado em modo retrato
             ));
         }
     }

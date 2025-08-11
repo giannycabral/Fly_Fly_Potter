@@ -851,8 +851,12 @@ class UIManager {
     }
     
     showScenarioNotification(newScenario) {
+        const isLandscape = this.isLandscapeMode;
+        
         if (newScenario === 'forest') {
-            this.notification.text = "FLORESTA PROIBIDA!";
+            // Texto adaptado para modo paisagem
+            this.notification.text = isLandscape ? "CUIDADO! FLORESTA PROIBIDA!" : "FLORESTA PROIBIDA!";
+            
             // Efeito visual quando entra na floresta
             const canvas = document.getElementById('gameCanvas');
             if (canvas) {
@@ -862,12 +866,22 @@ class UIManager {
                 }, 1000);
             }
             // Som especial para a floresta
-            audioManager.playSfx(audioManager.sfx.hit, "A2", "2n", Tone.now());
+            audioManager.playSfx(audioManager.sfx.hit, "A2", "2n");
         } else if (newScenario === 'quidditch') {
-            this.notification.text = "Campo de Quadribol";
+            this.notification.text = isLandscape ? "Você chegou ao Campo de Quadribol!" : "Campo de Quadribol";
         }
-        this.notification.timer = 240; // Aumentado o tempo de exibição para 4 segundos
+        
+        // Configurar a notificação
+        this.notification.timer = 240; // 4 segundos de exibição
         this.notification.alpha = 1.0;
+        
+        // Aplicar estilos específicos para modo paisagem
+        if (isLandscape) {
+            // Adicionar classe para aplicar estilos CSS específicos
+            this.notification.className = 'notification';
+        } else {
+            this.notification.className = '';
+        }
     }
     
     // Método para exibir mensagens flutuantes na interface
@@ -941,10 +955,58 @@ class UIManager {
     }
     
     drawScore(ctx, score) {
-        ctx.fillStyle = '#FFF';
-        ctx.font = '36px "Press Start 2P"';
+        ctx.save();
+        
+        // Verificar se estamos em modo paisagem para melhorar a visualização da pontuação
+        const isLandscape = this.isLandscapeMode;
+        
+        // Em modo paisagem, adicionar fundo e efeitos para melhor visibilidade
+        if (isLandscape) {
+            // Adicionar um fundo translúcido para a pontuação
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            
+            // Calcular o tamanho do texto
+            const scoreText = score.toString();
+            const textWidth = ctx.measureText(scoreText).width;
+            
+            // Desenhar retângulo de fundo
+            const padding = 15;
+            ctx.fillRect(
+                (CONFIG.BASE_WIDTH / 2) - (textWidth / 2) - padding,
+                40 - 36,
+                textWidth + padding * 2,
+                50
+            );
+            
+            // Adicionar uma borda sutil
+            ctx.strokeStyle = 'rgba(246, 224, 94, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+                (CONFIG.BASE_WIDTH / 2) - (textWidth / 2) - padding,
+                40 - 36,
+                textWidth + padding * 2,
+                50
+            );
+            
+            // Adicionar classes para a pontuação
+            ctx.fillStyle = '#FBBF24'; // Cor amarela mais visível em modo paisagem
+            ctx.font = 'bold 36px "Press Start 2P"';
+            
+            // Adicionar sombra para maior legibilidade
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 5;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+        } else {
+            // Estilo padrão para modo retrato
+            ctx.fillStyle = '#FFF';
+            ctx.font = '36px "Press Start 2P"';
+        }
+        
         ctx.textAlign = "center";
         ctx.fillText(score, CONFIG.BASE_WIDTH / 2, 75);
+        
+        ctx.restore();
     }
     
     // Método para atualizar configurações da UI com base na orientação
@@ -1011,48 +1073,81 @@ class UIManager {
         
         // Se estiver em modo paisagem em dispositivo móvel, ajustar posicionamento para garantir visibilidade
         if (this.isLandscapeMode) {
-            padding = 20; // Manter um padding adequado
-            heartScale = 1; // Manter o tamanho original dos corações
-            startYOffset = 10; // Leve deslocamento para baixo
+            padding = 20; // Aumentar padding para melhor visibilidade
+            heartScale = 1.2; // Aumentar ligeiramente o tamanho dos corações
+            startYOffset = 25; // Aumentar deslocamento para baixo para evitar que fique no topo extremo
         }
         
         ctx.save(); // Salvar o estado atual do contexto
         
-        // Adicionar um pequeno fundo semi-transparente para os corações
+        // Adicionar um fundo semi-transparente para os corações para destacá-los melhor
         if (this.isLandscapeMode) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            // Criar um fundo mais visível para os corações
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             ctx.fillRect(
-                padding - 5, 
-                padding + startYOffset - 5, 
-                lives * heartSpacing + 10, 
-                heartPixelSize * 5 + 10
+                padding - 10, 
+                padding + startYOffset - 10, 
+                lives * (heartSpacing * heartScale) + 20, 
+                (heartPixelSize * 5 * heartScale) + 20
+            );
+            
+            // Adicionar uma borda sutil para destacar
+            ctx.strokeStyle = 'rgba(246, 224, 94, 0.7)'; // Borda amarelada
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+                padding - 10, 
+                padding + startYOffset - 10, 
+                lives * (heartSpacing * heartScale) + 20, 
+                (heartPixelSize * 5 * heartScale) + 20
             );
         }
         
         for (let i = 0; i < lives; i++) {
-            const startX = padding + i * heartSpacing;
+            // Calcular posição inicial com escala
+            const startX = padding + i * (heartSpacing * heartScale);
             const startY = padding + startYOffset;
             
-            ctx.fillStyle = '#ef4444'; // Vermelho original
+            // Aplicar cores com base na orientação
+            ctx.fillStyle = this.isLandscapeMode ? '#ff0000' : '#ef4444'; // Vermelho mais vivo em paisagem
             
-            // Tamanho normal de pixel
-            const ps = heartPixelSize;
+            // Tamanho de pixel (aplicar escala em modo paisagem)
+            const ps = heartPixelSize * heartScale;
             
-            // Em modo paisagem, adicionar um contorno sutil para melhor visibilidade
+            // Em modo paisagem, adicionar efeitos para melhor visibilidade
             if (this.isLandscapeMode) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-                ctx.lineWidth = 0.5;
+                // Adicionar sombra ao coração para destacar do fundo
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
                 
-                // Desenhar um contorno sutil ao redor do coração
-                ctx.strokeRect(startX - 1, startY - 1, ps * 5 + 2, ps * 4 + 2);
+                // Desenhar glow ao redor para destacar
+                const glowColor = 'rgba(255, 255, 255, 0.7)';
+                ctx.strokeStyle = glowColor;
+                ctx.lineWidth = 2;
+                
+                // Desenhar um contorno ao redor do coração
+                ctx.strokeRect(startX - 2, startY - 2, ps * 5 + 4, ps * 4 + 4);
             }
             
-            // Desenhar um coração pixel por pixel com o tamanho normal
+            // Desenhar um coração pixel por pixel com o tamanho escalado
             ctx.fillRect(startX + ps, startY, ps, ps);
             ctx.fillRect(startX + ps * 3, startY, ps, ps);
             ctx.fillRect(startX, startY + ps, ps * 5, ps);
             ctx.fillRect(startX + ps, startY + ps * 2, ps * 3, ps);
             ctx.fillRect(startX + ps * 2, startY + ps * 3, ps, ps);
+            
+            // Adicionar um ponto de brilho para dar mais dimensão ao coração em paisagem
+            if (this.isLandscapeMode) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fillRect(startX + ps * 1.5, startY + ps, ps * 0.5, ps * 0.5);
+                
+                // Remover sombras após desenhar cada coração
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+            }
         }
         
         ctx.restore(); // Restaurar o estado anterior do contexto

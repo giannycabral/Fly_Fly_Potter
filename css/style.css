@@ -15,18 +15,27 @@ body {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 #game-container {
     position: relative;
     width: 100%;
-    max-width: 800px; /* Largura máxima do jogo */
-    max-height: 100vh; /* Altura máxima para modo paisagem */
-    aspect-ratio: 800 / 640; /* Proporção base do jogo */
+    height: 100%;
+    max-width: 100vw; /* Usar toda a largura em dispositivos móveis */
+    max-height: 100vh; /* Usar toda a altura em dispositivos móveis */
+    aspect-ratio: auto; /* Permitir que o container se ajuste à tela */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin: 0;
+    padding: 0;
 }
 
 canvas {
@@ -55,6 +64,18 @@ canvas {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    pointer-events: none; /* Permite cliques passarem através da UI para o canvas */
+}
+
+/* Garantimos que os elementos interativos dentro da camada UI capturem eventos */
+#ui-layer button, 
+#ui-layer .pointer-events-auto,
+#ui-layer .selection-container,
+#ui-layer #startScreen,
+#ui-layer #gameOverScreen,
+#ui-layer #pauseMenu,
+#ui-layer #spellModal {
+    pointer-events: auto;
 }
 
 #title {
@@ -86,24 +107,28 @@ canvas {
 }
 
 .selection-container {
-    padding: 4px;
+    padding: 6px;
     border: 3px solid #744210;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    background-color: rgba(0,0,0,0.4);
-    width: 64px;
+    background-color: rgba(0,0,0,0.6);
+    width: 70px;
     height: auto;
-    max-height: 80px;
+    max-height: 96px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    margin: 0 5px;
 }
 
 .selection-container.selected {
     border-color: #F6E05E;
     transform: scale(1.1);
+    background-color: rgba(116, 66, 16, 0.5);
+    box-shadow: 0 0 12px rgba(246, 224, 94, 0.5);
 }
 
 .selection-container canvas {
@@ -112,11 +137,25 @@ canvas {
     image-rendering: pixelated;
     margin: 0 auto;
     max-width: 100%;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    padding: 2px;
 }
 
 .selection-container p {
-    font-size: 8px;
-    margin-top: 4px;
+    font-size: 11px;
+    margin-top: 6px;
+    padding: 2px 3px;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px #000000;
+    font-weight: bold;
+    background-color: rgba(0,0,0,0.7);
+    border-radius: 4px;
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fade-out { animation: fadeOut 0.5s forwards; }
@@ -184,6 +223,55 @@ canvas {
     transition: width 0.1s linear;
 }
 
+/* Estilos específicos para os nomes dos personagens e vassouras */
+.char-name, .broom-name {
+    font-family: 'Press Start 2P', cursive;
+    letter-spacing: -0.5px;
+    word-spacing: -1px;
+    line-height: 1.2;
+    word-break: keep-all;
+}
+
+/* Estilos para mensagens flutuantes */
+.floating-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2000;
+    text-align: center;
+    max-width: 80%;
+    pointer-events: none;
+}
+
+.floating-message.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.floating-message.success {
+    background-color: rgba(22, 163, 74, 0.8);
+    border: 1px solid #16a34a;
+}
+
+.floating-message.warning {
+    background-color: rgba(251, 191, 36, 0.8);
+    border: 1px solid #fbbf24;
+    color: #000000;
+}
+
+.floating-message.error {
+    background-color: rgba(220, 38, 38, 0.8);
+    border: 1px solid #dc2626;
+}
+
 /* Regras para responsividade */
 .hidden {
     display: none !important;
@@ -215,30 +303,61 @@ canvas {
     visibility: hidden !important;
 }
 
-/* Estilos para dispositivos móveis em modo paisagem */
-@media screen and (orientation: landscape) and (max-height: 600px) {
+/* Estilos para dispositivos móveis em modo paisagem - MODO PREFERENCIAL PARA JOGAR */
+@media screen and (orientation: landscape) {
     #game-wrapper {
         height: 100vh;
         width: 100vw;
         padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
     }
     
     #game-container {
-        max-width: 100vw; /* Largura total da viewport em modo paisagem */
-        max-height: 100vh; /* Altura total disponível */
-        width: 100vw; /* Usa toda a largura da tela */
-        height: 100vh; /* Usa toda a altura da tela */
+        max-width: 100vw; /* Usar toda a largura da viewport */
+        max-height: 100vh; /* Usar toda a altura disponível */
+        width: 100vw; 
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        border: none; /* Remover borda para maximizar espaço */
+        box-shadow: none; /* Remover sombra */
+        border-radius: 0; /* Sem bordas arredondadas para tela cheia */
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        transform: none;
     }
     
     canvas {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Garante que o canvas cubra toda a área */
+        object-fit: cover; /* Alterado para cover para preencher toda a tela */
+        image-rendering: pixelated; /* Manter pixels nítidos */
+    }
+    
+    #ui-layer {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
     }
     
     #title {
-        font-size: 1rem; /* Título menor em telas pequenas em paisagem */
+        font-size: 1.2rem; /* Título ajustado para melhor visibilidade */
         top: 1%;
+        z-index: 1000; /* Garantir que o título esteja sempre visível */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.4); /* Sombra e glow */
+        background-color: rgba(0, 0, 0, 0.4); /* Fundo sutil para destacar o título */
+        padding: 5px 10px;
+        border-radius: 10px;
     }
     
     /* Ajustes para telas muito baixas */
@@ -248,17 +367,103 @@ canvas {
     
     /* Otimizações para botões em telas menores */
     .button-style {
-        padding: 0.5rem !important;
+        padding: 0.7rem !important;
         margin: 0.25rem !important;
+        font-size: 1rem !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important; /* Sombra mais visível */
+        border-width: 3px !important; /* Borda mais grossa */
     }
     
     /* Aumentar tamanho do botão de pausa para facilitar o toque */
     #pauseButton {
-        width: 50px;
-        height: 50px;
-        line-height: 46px;
+        width: 52px;
+        height: 52px;
+        line-height: 48px;
         font-size: 24px;
-        opacity: 0.7; /* Mais transparente para não atrapalhar a visualização */
+        opacity: 0.9;
+        right: 15px;
+        top: 15px;
+        z-index: 1000;
+        background-color: rgba(0, 0, 0, 0.7) !important; /* Fundo mais visível */
+        border: 3px solid #F6E05E !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.4) !important;
+    }
+    
+    #fullscreenButton {
+        width: 52px;
+        height: 52px;
+        line-height: 48px;
+        font-size: 24px;
+        opacity: 0.9;
+        left: 15px;
+        top: 15px;
+        z-index: 1000;
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        border: 3px solid #F6E05E !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.4) !important;
+    }
+    
+    /* Classe para destacar elementos importantes da UI em modo paisagem */
+    .landscape-mode .ui-element,
+    .landscape-mode #pauseButton,
+    .landscape-mode #fullscreenButton {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important; /* Brilho mais visível */
+    }
+    
+    /* Ajuste de tamanho dos containers de seleção para melhor visibilidade */
+    .selection-container {
+        width: 85px;
+        min-width: 85px;
+        padding: 8px;
+        margin: 0 8px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border-width: 3px !important;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .selection-container p {
+        font-size: 12px;
+        padding: 4px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #FBBF24;
+        text-shadow: 1px 1px 2px #000000;
+        width: 100%;
+        white-space: normal;
+        min-height: 20px;
+    }
+    
+    /* Melhorar a visibilidade das telas em modo paisagem */
+    #startScreen, #gameOverScreen, #pauseMenu, #spellModal {
+        background-color: rgba(0, 0, 0, 0.85);
+        border: 3px solid #F6E05E;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        min-width: 280px;
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    /* Melhorar a visibilidade dos elementos de pontuação */
+    .score-display {
+        font-size: 1.2rem !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        padding: 5px 10px !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+        text-shadow: 1px 1px 2px #000000 !important;
+        color: #FBBF24 !important;
+        margin-top: 60px !important; /* Mover para baixo para melhor visibilidade */
+        z-index: 100;
+        position: relative;
+    }
+    
+    /* Melhorar a visibilidade das notificações */
+    .notification {
+        font-size: 1.1rem !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        padding: 8px 15px !important;
+        border-radius: 10px !important;
+        border: 2px solid rgba(246, 224, 94, 0.6) !important;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.6) !important;
     }
 }
 
@@ -310,54 +515,128 @@ canvas {
     height: 100%;
 }
 
+/* Classe específica para elementos em modo tela cheia */
+.fullscreen-mode {
+    /* Garantir que elementos em modo tela cheia ocupem todo o espaço disponível */
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+}
+
 /* Estilo específico para container em tela cheia */
-:fullscreen #game-container {
+:fullscreen #game-container,
+:-webkit-full-screen #game-container,
+:-moz-full-screen #game-container,
+.fullscreen-mode #game-container {
     width: 100vw !important;
     height: 100vh !important;
     max-width: 100vw !important;
     max-height: 100vh !important;
-}
-
-:-webkit-full-screen #game-container {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
-}
-
-:-moz-full-screen #game-container {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 /* Estilo específico para dispositivos móveis em tela cheia e modo paisagem */
 @media screen and (orientation: landscape) {
+    :fullscreen #game-wrapper,
+    :-webkit-full-screen #game-wrapper,
+    :-moz-full-screen #game-wrapper,
+    .fullscreen-mode #game-wrapper {
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
     :fullscreen #game-container,
     :-webkit-full-screen #game-container,
-    :-moz-full-screen #game-container {
+    :-moz-full-screen #game-container,
+    .fullscreen-mode #game-container {
         width: 100vw !important;
         height: 100vh !important;
         max-width: 100vw !important;
         max-height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
     }
     
     /* Garantir que o canvas preencha o container em tela cheia */
     :fullscreen canvas,
     :-webkit-full-screen canvas,
-    :-moz-full-screen canvas {
+    :-moz-full-screen canvas,
+    .fullscreen-mode canvas {
         width: 100% !important;
         height: 100% !important;
-        object-fit: contain; /* Mudado para contain para garantir que todo conteúdo seja visível */
+        object-fit: cover !important; /* Alterado para cover para preencher toda a tela */
         image-rendering: -moz-crisp-edges !important;
         image-rendering: -webkit-crisp-edges !important;
         image-rendering: pixelated !important;
         image-rendering: crisp-edges !important;
     }
     
+    /* Ajustes para elementos de UI em modo tela cheia */
+    :fullscreen #ui-layer,
+    :-webkit-full-screen #ui-layer,
+    :-moz-full-screen #ui-layer,
+    .fullscreen-mode #ui-layer {
+        width: 100vw !important;
+        height: 100vh !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        pointer-events: none !important;
+    }
+    
+    /* Garantir que elementos interativos recebam eventos */
+    :fullscreen #ui-layer button, 
+    :fullscreen #ui-layer .pointer-events-auto,
+    :fullscreen #ui-layer .selection-container,
+    :fullscreen #ui-layer #startScreen,
+    :fullscreen #ui-layer #gameOverScreen,
+    :fullscreen #ui-layer #pauseMenu,
+    :fullscreen #ui-layer #spellModal,
+    .fullscreen-mode #ui-layer button,
+    .fullscreen-mode #ui-layer .pointer-events-auto,
+    .fullscreen-mode #ui-layer .selection-container,
+    .fullscreen-mode #ui-layer #startScreen,
+    .fullscreen-mode #ui-layer #gameOverScreen,
+    .fullscreen-mode #ui-layer #pauseMenu,
+    .fullscreen-mode #ui-layer #spellModal {
+        pointer-events: auto !important;
+    }
+    
+    /* Garantir que o título fique no topo e visível */
+    :fullscreen #title,
+    :-webkit-full-screen #title,
+    :-moz-full-screen #title,
+    .fullscreen-mode #title {
+        top: 1% !important;
+        z-index: 500 !important;
+        text-shadow: 2px 2px 4px #000000 !important;
+        font-size: 1.3rem !important;
+    }
+    
     /* Ajustes para elementos de UI em modo paisagem */
-    #pauseButton, #fullscreenButton {
+    :fullscreen #pauseButton, 
+    :fullscreen #fullscreenButton,
+    .fullscreen-mode #pauseButton, 
+    .fullscreen-mode #fullscreenButton {
         width: 60px !important;
         height: 60px !important;
         line-height: 56px !important;
@@ -369,10 +648,92 @@ canvas {
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important; /* Adicionar brilho */
     }
     
-    /* Ajuste específico para modo paisagem para garantir visibilidade da UI */
-    #game-wrapper.landscape-mode .ui-element {
+    /* Ajustes para o container de seleção em modo paisagem */
+    :fullscreen #characterSelection, 
+    :fullscreen #broomSelection,
+    .fullscreen-mode #characterSelection, 
+    .fullscreen-mode #broomSelection {
+        margin-bottom: 12px !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+    }
+    
+    /* Melhorar a visibilidade dos nomes dos personagens em modo paisagem */
+    :fullscreen .selection-container,
+    .fullscreen-mode .selection-container {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        padding: 8px !important;
+        border: 3px solid #744210 !important;
+        min-width: 85px !important;
+        width: 85px !important;
+        margin: 0 8px !important;
+        max-height: none !important;
+        height: auto !important;
+    }
+    
+    :fullscreen .selection-container canvas,
+    .fullscreen-mode .selection-container canvas {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        margin-bottom: 4px !important;
+        max-width: 100% !important;
+    }
+    
+    :fullscreen .selection-container p,
+    .fullscreen-mode .selection-container p {
+        font-size: 12px !important;
+        margin-top: 6px !important;
+        padding: 4px !important;
+        background-color: rgba(0, 0, 0, 0.8) !important;
+        border-radius: 4px !important;
+        color: #FBBF24 !important;
+        text-shadow: 1px 1px 2px #000000 !important;
+        letter-spacing: 0 !important;
+        width: 100% !important;
+        text-align: center !important;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.8) !important;
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
+        min-height: 20px !important;
+        display: block !important;
+        word-break: normal !important;
+    }
+    
+    :fullscreen .selection-container.selected p,
+    .fullscreen-mode .selection-container.selected p {
+        color: #ffffff !important;
+        text-shadow: 0 0 5px #FBBF24 !important;
+        background-color: rgba(116, 66, 16, 0.7) !important;
+        border: 1px solid rgba(246, 224, 94, 0.6) !important;
+    }
+    
+    /* Melhorar os menus em tela cheia */
+    :fullscreen #startScreen,
+    :fullscreen #gameOverScreen,
+    :fullscreen #pauseMenu,
+    :fullscreen #spellModal,
+    .fullscreen-mode #startScreen,
+    .fullscreen-mode #gameOverScreen,
+    .fullscreen-mode #pauseMenu,
+    .fullscreen-mode #spellModal {
+        background-color: rgba(0, 0, 0, 0.85) !important;
         border: 2px solid #F6E05E !important;
-        background-color: rgba(0, 0, 0, 0.6) !important;
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.8) !important;
+        max-width: 95% !important;
+        width: auto !important;
+        min-width: 320px !important;
+        padding: 15px !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Ajuste específico para modo paisagem para garantir visibilidade da UI */
+    :fullscreen #game-wrapper.landscape-mode .ui-element,
+    .fullscreen-mode #game-wrapper.landscape-mode .ui-element {
+        border: 2px solid #F6E05E !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
     }
 }
