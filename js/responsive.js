@@ -62,9 +62,9 @@ class ResponsiveManager {
         // Armazenar o estado da orientação para uso em outras partes do jogo
         this.isInLandscapeMode = isInLandscapeMode;
         
-        // Se for celular em modo paisagem, expandir o canvas para usar toda a tela disponível
-        if (isMobileDevice && isInLandscapeMode) {
-            // Em modo paisagem em celular, usar toda a tela disponível
+        // Para dispositivos móveis, otimizar para modo paisagem (o jogo deve ser jogado em paisagem)
+        if (isMobileDevice) {
+            // Determinar as dimensões disponíveis da tela
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
             
@@ -72,33 +72,89 @@ class ResponsiveManager {
             this.canvas.width = this.originalWidth;
             this.canvas.height = this.originalHeight;
             
-            // Configurar o container para ocupar a tela inteira em modo paisagem
-            this.gameContainer.style.maxWidth = '100vw';
-            this.gameContainer.style.maxHeight = '100vh';
-            this.gameContainer.style.width = '100vw';
-            this.gameContainer.style.height = '100vh';
-            
-            // Calcular a escala para preencher a tela inteira, mantendo a proporção
-            // Usamos min aqui para garantir que nada seja cortado
-            const scaleToFillX = screenWidth / this.originalWidth;
-            const scaleToFillY = screenHeight / this.originalHeight;
-            
-            // Usar a menor escala para garantir que todo o conteúdo seja visível
-            this.scaleRatio = Math.min(scaleToFillX, scaleToFillY);
-            
-            // Definir a escala CSS
-            const scaledWidth = Math.floor(this.originalWidth * this.scaleRatio);
-            const scaledHeight = Math.floor(this.originalHeight * this.scaleRatio);
-            
-            // Centralizar o canvas para garantir que ele apareça no centro da tela
-            this.gameContainer.style.transform = 'translate(-50%, -50%)';
-            this.gameContainer.style.left = '50%';
-            this.gameContainer.style.top = '50%';
-            this.gameContainer.style.position = 'absolute';
-            
-            console.log(`Canvas em modo paisagem expandido: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
+            if (isInLandscapeMode) {
+                // *** MODO PAISAGEM (RECOMENDADO) ***
+                
+                // Configurar o wrapper para usar toda a tela
+                this.gameWrapper.style.width = '100vw';
+                this.gameWrapper.style.height = '100vh';
+                this.gameWrapper.style.overflow = 'hidden';
+                
+                // Configurar o container para usar toda a tela em modo paisagem
+                this.gameContainer.style.maxWidth = '100vw';
+                this.gameContainer.style.maxHeight = '100vh';
+                this.gameContainer.style.width = '100vw';
+                this.gameContainer.style.height = '100vh';
+                
+                // Calcular a escala para preencher toda a tela, mantendo a proporção
+                const scaleToFillX = screenWidth / this.originalWidth;
+                const scaleToFillY = screenHeight / this.originalHeight;
+                
+                // Usar a escala máxima possível para preencher toda a tela
+                this.scaleRatio = Math.max(scaleToFillX, scaleToFillY);
+                
+                // Se a escala resultar em recorte do conteúdo, use a escala que mantém tudo visível
+                if (this.originalWidth * this.scaleRatio > screenWidth || 
+                    this.originalHeight * this.scaleRatio > screenHeight) {
+                    this.scaleRatio = Math.min(scaleToFillX, scaleToFillY);
+                }
+                
+                // Posicionar o container para ocupar a tela inteira sem transformação
+                this.gameContainer.style.position = 'fixed';
+                this.gameContainer.style.top = '0';
+                this.gameContainer.style.left = '0';
+                this.gameContainer.style.right = '0';
+                this.gameContainer.style.bottom = '0';
+                this.gameContainer.style.transform = 'none';
+                
+                // Remover margens e padding para maximizar o espaço
+                this.gameContainer.style.margin = '0';
+                this.gameContainer.style.padding = '0';
+                
+                // Garantir que o canvas ocupe o espaço total do container
+                this.canvas.style.width = '100%';
+                this.canvas.style.height = '100%';
+                this.canvas.style.objectFit = 'cover'; // Usar cover para ocupar todo o espaço
+                
+                // Certificar-se de que a camada UI também ocupe todo o espaço
+                const uiLayer = document.getElementById('ui-layer');
+                if (uiLayer) {
+                    uiLayer.style.width = '100vw';
+                    uiLayer.style.height = '100vh';
+                    uiLayer.style.top = '0';
+                    uiLayer.style.left = '0';
+                    uiLayer.style.right = '0';
+                    uiLayer.style.bottom = '0';
+                    uiLayer.style.position = 'fixed';
+                }
+                
+                console.log(`Canvas otimizado para modo paisagem: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
+            } else {
+                // *** MODO RETRATO (MOSTRAR AVISO PARA ROTACIONAR) ***
+                
+                // Mesmo em modo retrato, ainda apresentamos o jogo, mas com escala reduzida
+                // Isso facilita a visualização enquanto o usuário rotaciona o dispositivo
+                
+                const scaleX = containerWidth / this.originalWidth;
+                const scaleY = containerHeight / this.originalHeight;
+                this.scaleRatio = Math.min(scaleX, scaleY) * 0.7; // Escala reduzida para incentivar a rotação
+                
+                const scaledWidth = Math.floor(this.originalWidth * this.scaleRatio);
+                const scaledHeight = Math.floor(this.originalHeight * this.scaleRatio);
+                
+                // Ajustar o container do jogo para manter a proporção correta
+                this.gameContainer.style.width = scaledWidth + 'px';
+                this.gameContainer.style.height = scaledHeight + 'px';
+                
+                // Centralizar
+                this.gameContainer.style.transform = 'translate(-50%, -50%)';
+                this.gameContainer.style.left = '50%';
+                this.gameContainer.style.top = '50%';
+                this.gameContainer.style.position = 'absolute';
+            }
         } else {
-            // Comportamento padrão para outros casos (desktop ou modo retrato)
+            // *** COMPORTAMENTO PARA DISPOSITIVOS DESKTOP ***
+            
             // Calcular a escala mantendo a proporção
             const scaleX = containerWidth / this.originalWidth;
             const scaleY = containerHeight / this.originalHeight;
@@ -122,10 +178,10 @@ class ResponsiveManager {
             this.gameContainer.style.top = '50%';
             this.gameContainer.style.position = 'absolute';
             
-            console.log(`Canvas ajustado: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
+            console.log(`Canvas ajustado para desktop: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
         }
         
-        // Informar ao jogo sobre a mudança de escala
+        // Informar ao jogo sobre a mudança de escala e orientação
         if (window.game) {
             window.game.handleResponsiveUpdate(this.isInLandscapeMode);
         }
@@ -152,23 +208,47 @@ class ResponsiveManager {
         // Armazenar o estado da orientação para uso em outras funções
         this.isLandscapeMode = isLandscapeMode;
         
-        // Adicionar ou remover a classe 'landscape-mode' no wrapper do jogo
+        // Verificar se está em modo tela cheia
+        const isInFullscreen = !!document.fullscreenElement;
+        
+        // Adicionar ou remover classes relacionadas ao modo atual
         if (isLandscapeMode) {
             this.gameWrapper.classList.add('landscape-mode');
+            
+            // Aplicar estilos específicos para modo paisagem em tela cheia
+            if (isInFullscreen) {
+                document.body.classList.add('fullscreen-mode');
+                this.gameWrapper.classList.add('fullscreen-mode');
+            }
         } else {
             this.gameWrapper.classList.remove('landscape-mode');
+            
+            // Remover classes de tela cheia em modo retrato
+            if (!isInFullscreen) {
+                document.body.classList.remove('fullscreen-mode');
+                this.gameWrapper.classList.remove('fullscreen-mode');
+            }
         }
         
-        // Notificar o jogo sobre a mudança de orientação (se existir)
+        // Notificar o jogo sobre a mudança de orientação e status de tela cheia
         if (window.game) {
-            window.game.handleResponsiveUpdate(this.isLandscapeMode);
+            window.game.handleResponsiveUpdate(this.isLandscapeMode, isInFullscreen);
         }
         
-        // Mostrar mensagem se estiver em retrato em dispositivo móvel
+        // Para dispositivos móveis, SEMPRE mostrar mensagem se não estiver em modo paisagem
+        // O jogo foi otimizado para ser jogado APENAS em modo paisagem em celulares
         if (isMobileDevice && isPortrait) {
             this.rotationMessage.classList.remove('hidden');
             this.gameWrapper.style.opacity = "0.3";
             document.body.style.backgroundColor = "#090a0f"; // Escurecer o fundo
+            
+            // Atualizar texto da mensagem para deixar claro que o modo paisagem é o único suportado
+            const messageElement = this.rotationMessage.querySelector('p');
+            if (messageElement) {
+                messageElement.textContent = "Este jogo funciona apenas em modo paisagem. Por favor, rotacione seu dispositivo!";
+                messageElement.style.fontWeight = "bold";
+                messageElement.style.color = "#fde047"; // Amarelo mais visível
+            }
             
             // Adicionar uma animação de rotação ao ícone
             const rotationIcon = this.rotationMessage.querySelector('svg');
@@ -212,6 +292,15 @@ class ResponsiveManager {
                                         console.warn('Não foi possível bloquear a orientação: ', e);
                                     });
                                 }
+                                
+                                // Adicionar classe para estilos específicos de tela cheia
+                                document.body.classList.add('fullscreen-mode');
+                                this.gameWrapper.classList.add('fullscreen-mode');
+                                
+                                // Atualizar o layout para tela cheia
+                                setTimeout(() => {
+                                    this.updateCanvasSize();
+                                }, 300);
                             }).catch(err => {
                                 console.warn(`Erro ao tentar fullscreen: ${err.message}`);
                             });
@@ -383,18 +472,46 @@ ResponsiveManager.prototype.setupFullscreenButton = function() {
                             });
                         }
                         
-                        // Em dispositivos móveis, configurar o gameContainer para usar toda a tela
-                        if (this.isMobile) {
-                            this.gameContainer.style.maxWidth = '100vw';
-                            this.gameContainer.style.maxHeight = '100vh';
-                            this.gameContainer.style.width = '100vw';
-                            this.gameContainer.style.height = '100vh';
+                        // Sempre configurar o game-wrapper para usar toda a tela em fullscreen
+                        this.gameWrapper.style.width = '100vw';
+                        this.gameWrapper.style.height = '100vh';
+                        this.gameWrapper.style.overflow = 'hidden';
+                        this.gameWrapper.style.padding = '0';
+                        this.gameWrapper.style.margin = '0';
+                        
+                        // Configurar o gameContainer para usar toda a tela em fullscreen
+                        this.gameContainer.style.maxWidth = '100vw';
+                        this.gameContainer.style.maxHeight = '100vh';
+                        this.gameContainer.style.width = '100vw';
+                        this.gameContainer.style.height = '100vh';
+                        this.gameContainer.style.padding = '0';
+                        this.gameContainer.style.margin = '0';
+                        
+                        // Garantir que o canvas ocupe todo o espaço
+                        this.canvas.style.width = '100%';
+                        this.canvas.style.height = '100%';
+                        this.canvas.style.objectFit = 'cover';
+                        
+                        // Garantir que a camada UI ocupe toda a tela
+                        const uiLayer = document.getElementById('ui-layer');
+                        if (uiLayer) {
+                            uiLayer.style.width = '100%';
+                            uiLayer.style.height = '100%';
+                            uiLayer.style.position = 'absolute';
+                            uiLayer.style.top = '0';
+                            uiLayer.style.left = '0';
+                            uiLayer.style.right = '0';
+                            uiLayer.style.bottom = '0';
                         }
                         
                         // Verificar orientação após entrar em tela cheia
                         setTimeout(() => {
                             this.checkOrientation();
                             this.updateCanvasSize(); // Garantir que o tamanho é atualizado após entrar em tela cheia
+                            
+                            // Adicionar classe especial para estilos em modo tela cheia
+                            document.body.classList.add('fullscreen-mode');
+                            this.gameWrapper.classList.add('fullscreen-mode');
                         }, 300);
                         
                         // Forçar uma atualização do tamanho após entrar em tela cheia
@@ -407,6 +524,10 @@ ResponsiveManager.prototype.setupFullscreenButton = function() {
                 document.exitFullscreen()
                     .then(() => {
                         fullscreenButton.textContent = "⛶";
+                        
+                        // Remover classe de tela cheia
+                        document.body.classList.remove('fullscreen-mode');
+                        this.gameWrapper.classList.remove('fullscreen-mode');
                         
                         // Verificar orientação após sair da tela cheia
                         setTimeout(() => {
