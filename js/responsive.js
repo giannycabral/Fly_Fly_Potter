@@ -185,6 +185,18 @@ class ResponsiveManager {
             this.gameContainer.style.top = '50%';
             this.gameContainer.style.position = 'absolute';
             
+            // Definir offsets e dimensionar o ui-layer para alinhar com o canvas escalado
+            this.viewportOffsets = { x: 0, y: 0, cssWidth: scaledWidth, cssHeight: scaledHeight };
+            const uiLayerDesktop = document.getElementById('ui-layer');
+            if (uiLayerDesktop) {
+                uiLayerDesktop.style.position = 'absolute';
+                uiLayerDesktop.style.top = '0px';
+                uiLayerDesktop.style.left = '0px';
+                uiLayerDesktop.style.width = scaledWidth + 'px';
+                uiLayerDesktop.style.height = scaledHeight + 'px';
+                uiLayerDesktop.style.pointerEvents = 'none';
+            }
+            
             console.log(`Canvas ajustado para desktop: ${this.canvas.width}x${this.canvas.height} (Escala: ${this.scaleRatio.toFixed(3)})`);
         }
         
@@ -449,8 +461,10 @@ ResponsiveManager.prototype.init = function(game) {
     // Se estivermos em um dispositivo móvel, configurar controles de toque
     if (this.isMobile) {
         this.setupTouchControls();
-        this.setupFullscreenButton();
     }
+
+    // Botão de tela cheia disponível em plataformas compatíveis (mobile e desktop)
+    this.setupFullscreenButton();
     
     console.log('Gerenciador de responsividade inicializado com o jogo');
     
@@ -494,10 +508,10 @@ ResponsiveManager.prototype.setupFullscreenButton = function() {
                         this.gameContainer.style.padding = '0';
                         this.gameContainer.style.margin = '0';
                         
-                        // Garantir que o canvas ocupe todo o espaço
+                        // Garantir que o canvas ocupe todo o espaço sem cortes
                         this.canvas.style.width = '100%';
                         this.canvas.style.height = '100%';
-                        this.canvas.style.objectFit = 'cover';
+                        this.canvas.style.objectFit = 'contain';
                         
                         // Garantir que a camada UI ocupe toda a tela
                         const uiLayer = document.getElementById('ui-layer');

@@ -468,6 +468,50 @@ canvas {
     }
 }
 
+/* Ajustes para telas grandes (desktop) */
+@media screen and (min-width: 1280px) {
+    #title {
+        font-size: 1.6rem;
+    }
+
+    .button-style {
+        font-size: 1rem;
+        padding: 14px 28px;
+    }
+
+    /* Telas/menus maiores e mais confortáveis no desktop */
+    #startScreen, #gameOverScreen, #pauseMenu, #spellModal {
+        max-width: 720px;
+        width: auto;
+        padding: 20px 28px;
+        border-radius: 14px;
+        backdrop-filter: blur(2px);
+    }
+
+    #startScreen p, #gameOverScreen p, #pauseMenu h2, #spellModal h2 {
+        line-height: 1.4;
+    }
+
+    /* Seletores mais espaçosos */
+    .selection-container {
+        width: 96px;
+        min-width: 96px;
+        padding: 10px;
+        margin: 0 10px;
+    }
+    .selection-container p {
+        font-size: 13px;
+    }
+
+    /* Botões de controle maiores mantêm o estilo */
+    #pauseButton, #fullscreenButton {
+        width: 52px;
+        height: 52px;
+        line-height: 48px;
+        font-size: 24px;
+    }
+}
+
 /* Melhorias para controles de toque em dispositivos móveis */
 @media (hover: none) and (pointer: coarse) {
     /* Otimizações específicas para dispositivos de toque */
